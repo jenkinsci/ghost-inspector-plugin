@@ -1,0 +1,5 @@
+# Build directory
+target/
+
+# Misc
+*.DS_Store
