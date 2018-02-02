@@ -16,7 +16,7 @@
 
   <name>Ghost Inspector Plugin</name>
   <description>Allows users to run Ghost Inspector browser tests</description>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/Ghost+Inspector+Plugin</url>
+  <url>https://ghostinspector.com/docs/integration/jenkins/</url>
   <developers>
     <developer>
       <id>justinklemm</id>
