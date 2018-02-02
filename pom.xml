@@ -11,12 +11,12 @@
   </parent>
   <groupId>com.ghost-inspector.jenkins</groupId>
   <artifactId>ghost-inspector</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
   <packaging>hpi</packaging>
 
   <name>Ghost Inspector Plugin</name>
   <description>Allows users to run Ghost Inspector browser tests</description>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/Ghost+Inspector+Plugin</url>
+  <url>https://ghostinspector.com/docs/integration/jenkins/</url>
   <developers>
     <developer>
       <id>justinklemm</id>
@@ -34,7 +34,7 @@
     <connection>scm:git:git://github.com/jenkinsci/ghost-inspector-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/ghost-inspector-plugin.git</developerConnection>
     <url>http://github.com/jenkinsci/ghost-inspector-plugin</url>
-    <tag>ghost-inspector-1.0</tag>
+    <tag>ghost-inspector-1.1</tag>
   </scm>
   <repositories>
     <repository>
