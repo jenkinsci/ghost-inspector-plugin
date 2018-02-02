@@ -30,6 +30,7 @@ public class GhostInspectorTrigger implements Callable<String> {
     private static final String API_HOST = "https://api.ghostinspector.com";
     private static final String APP_HOST = "https://app.ghostinspector.com";
     private static final String API_VERSION = "v1";
+    private static final String TEST_RESULTS_PENDING = "pending";
     private static final String TEST_RESULTS_PASS = "pass";
     private static final String TEST_RESULTS_FAIL = "fail";
 
@@ -39,7 +40,6 @@ public class GhostInspectorTrigger implements Callable<String> {
     private final int timeout;
 
     private PrintStream log;
-    String resp = null;
 
     public GhostInspectorTrigger(PrintStream logger, String apiKey, String suiteId, String startUrl, int timeout) {
         this.log = logger;
@@ -51,34 +51,54 @@ public class GhostInspectorTrigger implements Callable<String> {
 
     @Override
     public String call() throws Exception {
-        String apiUrl = API_HOST + "/" + API_VERSION + "/suites/" + suiteId + "/execute/?apiKey=" + apiKey;
+        String result = null;
+        // Generate suite execution API URL
+        String executeUrl = API_HOST + "/" + API_VERSION + "/suites/" + suiteId + "/execute/?immediate=1&apiKey=" + apiKey;
         if (startUrl != null && startUrl != "") {
-            apiUrl = apiUrl + "&startUrl=" + URLEncoder.encode(startUrl, "UTF-8");
+            executeUrl = executeUrl + "&startUrl=" + URLEncoder.encode(startUrl, "UTF-8");
         }
-        log.println("Suite Execution URL: " + apiUrl);
+        log.println("Suite Execution URL: " + executeUrl);
 
-        resp = process(apiUrl);
-        log.println("Response received: " + resp);
+        // Trigger suite and fetch result ID
+        String resultId = parseResultId(fetchUrl(executeUrl));
+        log.println("Suite triggered. Result ID received: " + resultId);
 
-        return resp;
+        // Poll suite result until it completes
+        String resultUrl = API_HOST + "/" + API_VERSION + "/suite-results/" + resultId + "/?apiKey=" + apiKey;
+        while (true) {
+            // Sleep for 10 seconds
+            try {
+                TimeUnit.SECONDS.sleep(10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            // Check result
+            result = parseResult(fetchUrl(resultUrl));
+            if (result == TEST_RESULTS_PENDING) {
+                log.println("Suite is still in progress. Checking again in 10 seconds...");
+            } else {
+                return result;
+            }
+        }
     }
 
     /**
-     * Method for making HTTP call
+     * Method for making an HTTP call
      *
-     * @param url
-     * @return
+     * @param   url     The URL to fetch
+     * @return          The response body of the URL
      */
-    public String process(String url) {
-        String result = "";
+    private String fetchUrl(String url) {
+        String responseBody = "";
         final CloseableHttpAsyncClient httpclient = HttpAsyncClients.createDefault();
         try {
             httpclient.start();
 
             final RequestConfig config = RequestConfig.custom()
-                    .setConnectTimeout(timeout * 1000)
-                    .setConnectionRequestTimeout(timeout * 1000)
-                    .setSocketTimeout(timeout * 1000).build();
+                    .setConnectTimeout(60 * 1000)
+                    .setConnectionRequestTimeout(60 * 1000)
+                    .setSocketTimeout(60 * 1000)
+                    .build();
 
             final HttpGet request = new HttpGet(url);
             request.setHeader("User-Agent", "ghost-inspector-jenkins-plugin/1.0");
@@ -90,9 +110,8 @@ public class GhostInspectorTrigger implements Callable<String> {
             if (statusCode != 200 && statusCode != 201) {
                 log.println(String.format("Error response from Ghost Inspector API, marking as failed: %s", statusCode));
             } else {
-                String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
+                responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
                 //log.println("Data received: " + responseBody);
-                result = parseJSON(responseBody);
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Exception: ", e);
@@ -105,36 +124,44 @@ public class GhostInspectorTrigger implements Callable<String> {
                 e.printStackTrace();
             }
         }
-        return result;
+        return responseBody;
     }
 
+    /**
+     * Parse the suite result ID from API JSON response
+     *
+     * @param   data    The JSON to parse in string format
+     * @return          The ID of the suite result
+     */
+    private String parseResultId(String data) {
+        JSONObject jsonObject = JSONObject.fromObject(data);
+        JSONObject result = jsonObject.getJSONObject("data");
+        return result.get("_id").toString();
+    }
 
     /**
-     * @param data
-     * @return test result
+     * Parse the suite result JSON response to determine status
+     *
+     * @param   data    The JSON to parse in string format
+     * @return          The status of the suite result
      */
-    private String parseJSON(String data) {
-        int passing = 0;
-        int failing = 0;
+    private String parseResult(String data) {
         JSONObject jsonObject = JSONObject.fromObject(data);
-        JSONArray testResults = jsonObject.getJSONArray("data");
+        JSONObject result = jsonObject.getJSONObject("data");
 
-        for (int i = 0; i < testResults.size(); i++) {
-            JSONObject test = testResults.getJSONObject(i);
-            if (test.get("passing").toString() == "true") {
-                passing++;
-            } else {
-                failing++;
-            }
+        if (result.get("passing").toString() == "null") {
+            return TEST_RESULTS_PENDING; 
         }
 
-        log.println("Test runs passed: " + passing);
-        log.println("Test runs failed: " + failing);
+        log.println("Test runs passed: " + result.get("countPassing"));
+        log.println("Test runs failed: " + result.get("countFailing"));
+        log.println("Execution time: " + (Integer.parseInt(result.get("executionTime").toString()) / 1000) + " seconds");
+        
 
-        if (failing > 0) {
-            return TEST_RESULTS_FAIL;
-        } else {
+        if (result.get("passing").toString() == "true") {
             return TEST_RESULTS_PASS;
+        } else {
+            return TEST_RESULTS_FAIL;
         }
     }
 
