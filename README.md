@@ -23,4 +23,5 @@ This plugin can be installed from within the Jenkins UI (recommended).
 5. Save your Jenkins project.
 
 ## Change Log
+2018-Feb-02: Move from sync API call to async polling
 2017-Apr-04: Initial release
