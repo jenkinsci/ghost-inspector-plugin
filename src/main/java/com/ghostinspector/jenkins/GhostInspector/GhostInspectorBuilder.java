@@ -35,14 +35,16 @@ public class GhostInspectorBuilder extends Builder {
     private final String suiteId;
     private final String apiKey;
     private final String startUrl;
+    private final String params;
     
     public String resp;
 
     @DataBoundConstructor
-    public GhostInspectorBuilder(String apiKey, String suiteId, String startUrl) {
+    public GhostInspectorBuilder(String apiKey, String suiteId, String startUrl, String params) {
 		this.apiKey = apiKey;
 		this.suiteId = suiteId;
         this.startUrl = startUrl;
+        this.params = params;
 	}
 	
 	/**
@@ -66,6 +68,13 @@ public class GhostInspectorBuilder extends Builder {
 		return startUrl;
 	}
 
+    /**
+	 * @return additional parameters
+	 */
+	public String getParams() {
+		return params;
+	}
+
     /* 
      * @see hudson.tasks.BuildStepCompatibilityLayer#perform(hudson.model.AbstractBuild, hudson.Launcher, hudson.model.BuildListener)
      */
@@ -78,9 +87,10 @@ public class GhostInspectorBuilder extends Builder {
         //logger.println("API Key: " + apiKey);
         logger.println("Suite ID: " + suiteId);
         logger.println("Start URL: " + startUrl);
+        logger.println("Additional Parameters: " + params);
     	
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Future<String> future = executorService.submit(new GhostInspectorTrigger(logger, apiKey, suiteId, startUrl, TIMEOUT));
+        Future<String> future = executorService.submit(new GhostInspectorTrigger(logger, apiKey, suiteId, startUrl, params, TIMEOUT));
 
         try {
             String result = future.get(TIMEOUT + 30, TimeUnit.SECONDS);

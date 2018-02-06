@@ -37,15 +37,17 @@ public class GhostInspectorTrigger implements Callable<String> {
     private final String apiKey;
     private final String suiteId;
     private final String startUrl;
+    private final String params;
     private final int timeout;
 
     private PrintStream log;
 
-    public GhostInspectorTrigger(PrintStream logger, String apiKey, String suiteId, String startUrl, int timeout) {
+    public GhostInspectorTrigger(PrintStream logger, String apiKey, String suiteId, String startUrl, String params, int timeout) {
         this.log = logger;
         this.apiKey = apiKey;
         this.suiteId = suiteId;
         this.startUrl = startUrl;
+        this.params = params;
         this.timeout = timeout;
     }
 
@@ -56,6 +58,9 @@ public class GhostInspectorTrigger implements Callable<String> {
         String executeUrl = API_HOST + "/" + API_VERSION + "/suites/" + suiteId + "/execute/?immediate=1&apiKey=" + apiKey;
         if (startUrl != null && startUrl != "") {
             executeUrl = executeUrl + "&startUrl=" + URLEncoder.encode(startUrl, "UTF-8");
+        }
+        if (params != null && params != "") {
+            executeUrl = executeUrl + "&" + params;
         }
         log.println("Suite Execution URL: " + executeUrl);
 
