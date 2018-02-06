@@ -20,8 +20,12 @@ This plugin can be installed from within the Jenkins UI (recommended).
 2. In the build section, click ```Add build step``` and select ```Run Ghost Inspector Test Suite```.
 3. In the ```API Key``` field, paste in your account's API key. For the ```Suite ID``` field, paste in the ID of the test suite that you would like to execute.
 4. If you would like to run your Ghost Inspector tests on a URL other than their default setting (such as a local build instance of your application using a tunnel), enter the start URL in the ```Start URL``` field.
-5. Save your Jenkins project.
+5. If you would like to pass other custom parameters or variables to your suite run, specify them in the ```Additional Parameters``` field.
+6. Save your Jenkins project.
+
+_Note:_ Environment variables may be used in both the ```Start URL``` and ```Additional Parameters``` field with the format ```$VAR_NAME```.
 
 ## Change Log
+2018-Feb-06: Add "Additional Parameters" field. Apply environment variables to "Start URL" and "Additional Parameters" fields.
 2018-Feb-02: Move from sync API call to async polling
 2017-Apr-04: Initial release
