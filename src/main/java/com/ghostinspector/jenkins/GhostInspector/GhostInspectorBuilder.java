@@ -83,14 +83,24 @@ public class GhostInspectorBuilder extends Builder {
         PrintStream logger = listener.getLogger();
         EnvVars envVars = build.getEnvironment(listener);
 
+        // Apply environment variables in start URL and additional params
+        String expandedStartUrl = "";
+        if (startUrl != null && startUrl != "") {
+            expandedStartUrl = envVars.expand(startUrl);
+        }
+        String expandedParams = "";
+        if (params != null && params != "") {
+            expandedParams = envVars.expand(params);
+        }
+
         logger.println(DISPLAY_NAME);
         //logger.println("API Key: " + apiKey);
         logger.println("Suite ID: " + suiteId);
-        logger.println("Start URL: " + startUrl);
-        logger.println("Additional Parameters: " + params);
+        logger.println("Start URL: " + expandedStartUrl);
+        logger.println("Additional Parameters: " + expandedParams);
     	
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Future<String> future = executorService.submit(new GhostInspectorTrigger(logger, apiKey, suiteId, startUrl, params, TIMEOUT));
+        Future<String> future = executorService.submit(new GhostInspectorTrigger(logger, apiKey, suiteId, expandedStartUrl, expandedParams, TIMEOUT));
 
         try {
             String result = future.get(TIMEOUT + 30, TimeUnit.SECONDS);
