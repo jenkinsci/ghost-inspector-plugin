@@ -85,11 +85,11 @@ public class GhostInspectorBuilder extends Builder {
 
         // Apply environment variables in start URL and additional params
         String expandedStartUrl = "";
-        if (startUrl != null && startUrl != "") {
+        if (startUrl != null && !startUrl.isEmpty()) {
             expandedStartUrl = envVars.expand(startUrl);
         }
         String expandedParams = "";
-        if (params != null && params != "") {
+        if (params != null && !params.isEmpty()) {
             expandedParams = envVars.expand(params);
         }
 

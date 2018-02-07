@@ -56,10 +56,10 @@ public class GhostInspectorTrigger implements Callable<String> {
         String result = null;
         // Generate suite execution API URL
         String executeUrl = API_HOST + "/" + API_VERSION + "/suites/" + suiteId + "/execute/?immediate=1&apiKey=" + apiKey;
-        if (startUrl != null && startUrl != "") {
+        if (startUrl != null && !startUrl.isEmpty()) {
             executeUrl = executeUrl + "&startUrl=" + URLEncoder.encode(startUrl, "UTF-8");
         }
-        if (params != null && params != "") {
+        if (params != null && !params.isEmpty()) {
             executeUrl = executeUrl + "&" + params;
         }
         log.println("Suite Execution URL: " + executeUrl);
