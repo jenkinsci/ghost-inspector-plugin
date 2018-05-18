@@ -27,110 +27,109 @@ import net.sf.json.JSONObject;
  */
 public class GhostInspectorTrigger implements Callable<String> {
 
-    private static final String API_HOST = "https://api.ghostinspector.com";
-    private static final String APP_HOST = "https://app.ghostinspector.com";
-    private static final String API_VERSION = "v1";
-    private static final String TEST_RESULTS_PENDING = "pending";
-    private static final String TEST_RESULTS_PASS = "pass";
-    private static final String TEST_RESULTS_FAIL = "fail";
+  private static final String API_HOST = "https://api.ghostinspector.com";
+  private static final String APP_HOST = "https://app.ghostinspector.com";
+  private static final String API_VERSION = "v1";
+  private static final String TEST_RESULTS_PENDING = "pending";
+  private static final String TEST_RESULTS_PASS = "pass";
+  private static final String TEST_RESULTS_FAIL = "fail";
 
-    private final String apiKey;
-    private final String suiteId;
-    private final String startUrl;
-    private final String params;
-    private final int timeout;
+  private final String apiKey;
+  private final String suiteId;
+  private final String startUrl;
+  private final String params;
+  private final int timeout;
 
-    private PrintStream log;
+  private PrintStream log;
 
-    public GhostInspectorTrigger(PrintStream logger, String apiKey, String suiteId, String startUrl, String params, int timeout) {
-        this.log = logger;
-        this.apiKey = apiKey;
-        this.suiteId = suiteId;
-        this.startUrl = startUrl;
-        this.params = params;
-        this.timeout = timeout;
+  public GhostInspectorTrigger(PrintStream logger, String apiKey, String suiteId, String startUrl, String params, int timeout) {
+    this.log = logger;
+    this.apiKey = apiKey;
+    this.suiteId = suiteId;
+    this.startUrl = startUrl;
+    this.params = params;
+    this.timeout = timeout;
+  }
+
+  @Override
+  public String call() throws Exception {
+    String result = null;
+    // Generate suite execution API URL
+    String executeUrl = API_HOST + "/" + API_VERSION + "/suites/" + suiteId + "/execute/?immediate=1&apiKey=" + apiKey;
+    if (startUrl != null && !startUrl.isEmpty()) {
+      executeUrl = executeUrl + "&startUrl=" + URLEncoder.encode(startUrl, "UTF-8");
     }
-
-    @Override
-    public String call() throws Exception {
-        String result = null;
-        // Generate suite execution API URL
-        String executeUrl = API_HOST + "/" + API_VERSION + "/suites/" + suiteId + "/execute/?immediate=1&apiKey=" + apiKey;
-        if (startUrl != null && !startUrl.isEmpty()) {
-            executeUrl = executeUrl + "&startUrl=" + URLEncoder.encode(startUrl, "UTF-8");
-        }
-        if (params != null && !params.isEmpty()) {
-            executeUrl = executeUrl + "&" + params;
-        }
-        log.println("Suite Execution URL: " + executeUrl);
-
-        // Trigger suite and fetch result ID
-        String resultId = parseResultId(fetchUrl(executeUrl));
-        log.println("Suite triggered. Result ID received: " + resultId);
-
-        // Poll suite result until it completes
-        String resultUrl = API_HOST + "/" + API_VERSION + "/suite-results/" + resultId + "/?apiKey=" + apiKey;
-        while (true) {
-            // Sleep for 10 seconds
-            try {
-                TimeUnit.SECONDS.sleep(10);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            // Check result
-            result = parseResult(fetchUrl(resultUrl));
-            if (result == TEST_RESULTS_PENDING) {
-                log.println("Suite is still in progress. Checking again in 10 seconds...");
-            } else {
-                return result;
-            }
-        }
+    if (params != null && !params.isEmpty()) {
+      executeUrl = executeUrl + "&" + params;
     }
+    log.println("Suite Execution URL: " + executeUrl);
 
-    /**
-     * Method for making an HTTP call
-     *
-     * @param   url     The URL to fetch
-     * @return          The response body of the URL
-     */
-    private String fetchUrl(String url) {
-        String responseBody = "";
-        final CloseableHttpAsyncClient httpclient = HttpAsyncClients.createDefault();
-        try {
-            httpclient.start();
+    // Trigger suite and fetch result ID
+    String resultId = parseResultId(fetchUrl(executeUrl));
+    log.println("Suite triggered. Result ID received: " + resultId);
 
-            final RequestConfig config = RequestConfig.custom()
-                    .setConnectTimeout(60 * 1000)
-                    .setConnectionRequestTimeout(60 * 1000)
-                    .setSocketTimeout(60 * 1000)
-                    .build();
-
-            final HttpGet request = new HttpGet(url);
-            request.setHeader("User-Agent", "ghost-inspector-jenkins-plugin/1.0");
-            request.setConfig(config);
-            final Future<HttpResponse> future = httpclient.execute(request, null);
-            final HttpResponse response = future.get();
-
-            final int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200 && statusCode != 201) {
-                log.println(String.format("Error response from Ghost Inspector API, marking as failed: %s", statusCode));
-            } else {
-                responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
-                //log.println("Data received: " + responseBody);
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Exception: ", e);
-            e.printStackTrace();
-        } finally {
-            try {
-                httpclient.close();
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Error closing connection: ", e);
-                e.printStackTrace();
-            }
-        }
-        return responseBody;
+    // Poll suite result until it completes
+    String resultUrl = API_HOST + "/" + API_VERSION + "/suite-results/" + resultId + "/?apiKey=" + apiKey;
+    while (true) {
+      // Sleep for 10 seconds
+      try {
+        TimeUnit.SECONDS.sleep(10);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+      // Check result
+      result = parseResult(fetchUrl(resultUrl));
+      if (result == TEST_RESULTS_PENDING) {
+        log.println("Suite is still in progress. Checking again in 10 seconds...");
+      } else {
+        return result;
+      }
     }
+  }
+
+  /**
+   * Method for making an HTTP call
+   * @param   url     The URL to fetch
+   * @return          The response body of the URL
+   */
+  private String fetchUrl(String url) {
+    String responseBody = "";
+    final CloseableHttpAsyncClient httpclient = HttpAsyncClients.createDefault();
+    try {
+      httpclient.start();
+
+      final RequestConfig config = RequestConfig.custom()
+        .setConnectTimeout(60 * 1000)
+        .setConnectionRequestTimeout(60 * 1000)
+        .setSocketTimeout(60 * 1000)
+        .build();
+
+      final HttpGet request = new HttpGet(url);
+      request.setHeader("User-Agent", "ghost-inspector-jenkins-plugin/1.0");
+      request.setConfig(config);
+      final Future<HttpResponse> future = httpclient.execute(request, null);
+      final HttpResponse response = future.get();
+
+      final int statusCode = response.getStatusLine().getStatusCode();
+      if (statusCode != 200 && statusCode != 201) {
+        log.println(String.format("Error response from Ghost Inspector API, marking as failed: %s", statusCode));
+      } else {
+        responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
+        //log.println("Data received: " + responseBody);
+      }
+    } catch (Exception e) {
+      LOGGER.log(Level.SEVERE, "Exception: ", e);
+      e.printStackTrace();
+    } finally {
+      try {
+        httpclient.close();
+      } catch (IOException e) {
+        LOGGER.log(Level.SEVERE, "Error closing connection: ", e);
+        e.printStackTrace();
+      }
+    }
+    return responseBody;
+  }
 
     /**
      * Parse the suite result ID from API JSON response
@@ -139,9 +138,9 @@ public class GhostInspectorTrigger implements Callable<String> {
      * @return          The ID of the suite result
      */
     private String parseResultId(String data) {
-        JSONObject jsonObject = JSONObject.fromObject(data);
-        JSONObject result = jsonObject.getJSONObject("data");
-        return result.get("_id").toString();
+      JSONObject jsonObject = JSONObject.fromObject(data);
+      JSONObject result = jsonObject.getJSONObject("data");
+      return result.get("_id").toString();
     }
 
     /**
@@ -151,23 +150,22 @@ public class GhostInspectorTrigger implements Callable<String> {
      * @return          The status of the suite result
      */
     private String parseResult(String data) {
-        JSONObject jsonObject = JSONObject.fromObject(data);
-        JSONObject result = jsonObject.getJSONObject("data");
+      JSONObject jsonObject = JSONObject.fromObject(data);
+      JSONObject result = jsonObject.getJSONObject("data");
 
-        if (result.get("passing").toString() == "null") {
-            return TEST_RESULTS_PENDING; 
-        }
+      if (result.get("passing").toString() == "null") {
+        return TEST_RESULTS_PENDING;
+      }
 
-        log.println("Test runs passed: " + result.get("countPassing"));
-        log.println("Test runs failed: " + result.get("countFailing"));
-        log.println("Execution time: " + (Integer.parseInt(result.get("executionTime").toString()) / 1000) + " seconds");
-        
+      log.println("Test runs passed: " + result.get("countPassing"));
+      log.println("Test runs failed: " + result.get("countFailing"));
+      log.println("Execution time: " + (Integer.parseInt(result.get("executionTime").toString()) / 1000) + " seconds");
 
-        if (result.get("passing").toString() == "true") {
-            return TEST_RESULTS_PASS;
-        } else {
-            return TEST_RESULTS_FAIL;
-        }
+      if (result.get("passing").toString() == "true") {
+        return TEST_RESULTS_PASS;
+      } else {
+        return TEST_RESULTS_FAIL;
+      }
     }
 
     private static final Logger LOGGER = Logger.getLogger(GhostInspectorTrigger.class.getName());
