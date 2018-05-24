@@ -22,8 +22,6 @@ import net.sf.json.JSONObject;
 
 /**
  * GhostInspectorTrigger
- *
- * @email help@ghostinspector.com
  */
 public class GhostInspectorTrigger implements Callable<String> {
 
@@ -153,7 +151,7 @@ public class GhostInspectorTrigger implements Callable<String> {
       JSONObject jsonObject = JSONObject.fromObject(data);
       JSONObject result = jsonObject.getJSONObject("data");
 
-      if (result.get("passing").toString() == "null") {
+      if (result.get("passing").toString().equals("null")) {
         return TEST_RESULTS_PENDING;
       }
 
@@ -161,7 +159,7 @@ public class GhostInspectorTrigger implements Callable<String> {
       log.println("Test runs failed: " + result.get("countFailing"));
       log.println("Execution time: " + (Integer.parseInt(result.get("executionTime").toString()) / 1000) + " seconds");
 
-      if (result.get("passing").toString() == "true") {
+      if (result.get("passing").toString().equals("true")) {
         return TEST_RESULTS_PASS;
       } else {
         return TEST_RESULTS_FAIL;

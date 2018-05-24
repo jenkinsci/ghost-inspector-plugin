@@ -12,19 +12,18 @@ import java.util.concurrent.TimeoutException;
 import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.Extension;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
+// import hudson.model.AbstractBuild;
+import hudson.model.TaskListener;
 import hudson.model.Result;
 import hudson.model.AbstractProject;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * GhostInspectorBuilder {@link Builder}.
- *
- * @email  help@ghostinspector.com
  */
 public class GhostInspectorBuilder extends Builder {
 
@@ -37,12 +36,10 @@ public class GhostInspectorBuilder extends Builder {
   private final String startUrl;
   private final String params;
 
-  public String resp;
-
   @DataBoundConstructor
   public GhostInspectorBuilder(String apiKey, String suiteId, String startUrl, String params) {
-  this.apiKey = apiKey;
-  this.suiteId = suiteId;
+    this.apiKey = apiKey;
+    this.suiteId = suiteId;
     this.startUrl = startUrl;
     this.params = params;
 	}
@@ -75,11 +72,9 @@ public class GhostInspectorBuilder extends Builder {
 		return params;
 	}
 
-  /**
-   * @see hudson.tasks.BuildStepCompatibilityLayer#perform(hudson.model.AbstractBuild, hudson.Launcher, hudson.model.BuildListener)
-   */
-  @Override
-  public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+ 
+  // @Override
+  public boolean perform(WorkflowRun build, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
     PrintStream logger = listener.getLogger();
     EnvVars envVars = build.getEnvironment(listener);
 
