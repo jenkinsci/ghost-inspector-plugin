@@ -7,7 +7,7 @@ jobs:
       - checkout
       - run:
           name: check for maven
-          command: which maven
+          command: which mvn
 
 workflows:
   version: 2
