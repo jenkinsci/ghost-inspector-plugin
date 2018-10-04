@@ -111,8 +111,6 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
       e.printStackTrace();
     }
     executorService.shutdownNow();
-
-    return true;
   }
 
   @Override

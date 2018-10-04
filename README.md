@@ -25,15 +25,27 @@ This plugin can be installed from within the Jenkins UI (recommended).
 
 _Note:_ Environment variables may be used in both the ```Start URL``` and ```Additional Parameters``` field with the format ```$VAR_NAME```.
 
+## Pipelines usage
+The following example will allow you to trigger the Ghost Inspector plugin from your pipelines config:
+
+```
+node {
+   stage('Main') {
+        step([$class: 'GhostInspectorBuilder', apiKey: 'my-api-key', params: '{"additional": "parameters"}', startUrl: 'my-start-url', suiteId: 'my-suite-id'])
+   }
+}
+```
+
 ## Development
-Add settings.xml https://wiki.jenkins.io/display/JENKINS/Plugin+tutorial#Plugintutorial-SettingUpEnvironment
+Quick start:
 
-# switch to JDK v8 (9 will not work)
-export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+```
+$ brew install java8 maven
+$ export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+$ mvn clean install
+```
 
-$mvn clean install
-
-
+The resulting `ghost-inspector.hpi` can be found in the `./target` folder.
 
 ## Change Log
 2018-Feb-06: Add "Additional Parameters" field. Apply environment variables to "Start URL" and "Additional Parameters" fields.
