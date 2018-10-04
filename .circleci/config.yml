@@ -1,16 +1,67 @@
 version: 2
 jobs:
-  build-and-test:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - run:
+          name: build plugin
+          command: mvn clean install
+      - persist_to_workspace:
+          root: target
+          paths: 
+            - ghost-inspector.hpi
+
+  test:
     docker:
       - image: docker:17.05.0-ce-git
     steps:
+      - attach_workspace:
+          at: target
+
       - setup_remote_docker
       - checkout
-      # - awk out the config info in ./jenkins_home/jobs/*/config.xml
-      # - spin up jenkins server with jenkins_home
+
+      - run:
+          name: debug
+          command: ls -l
+
+      # - run:
+      #     name: swap in the test secrets
+      #     command: |
+      #       sed -i '' 's/{{APIKEY}}/$APIKEY/g' ./jenkins_home/jobs/*/config.xml
+      #       sed -i '' 's/{{SUITEID}}/$SUITEID/g' ./jenkins_home/jobs/*/config.xml
+
+      # - run:
+      #     name: copy new ghost inspector plugin to jenkins_home
+      #     command: cp ./target/ghost-inspector.hpi ./jenkins_home/plugins/
+
+      # # - spin up jenkins server with jenkins_home
+      # - run:
+      #     name: fire up jenkins container
+      #     command: |
+      #       docker network create temp-network
+      #       docker run -d \
+      #         -p 8080:8080 \
+      #         -v ./jenkins_home:/var/jenkins_home \
+      #         --network temp-network \
+      #         jenkins/jenkins:lts
+      # - run:
+      #     name: pause to let jenkins load
+      #     command: sleep 60
+      # - run:
+      #     name: run standard build job
+      #     command: ./scripts/test-plugin standard-test
+      # - run:
+      #     name: run pipeline build job
+      #     command: ./scripts/test-plugin pipeline-test
+        
 
 workflows:
   version: 2
   build_and_test:
     jobs:
-      - build-and-test
+      - build
+      # - test:
+      #     requires: build
