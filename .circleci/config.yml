@@ -30,7 +30,7 @@ jobs:
 
       - run:
           name: debug
-          command: ls -l /tmp/plugin/
+          command: ls
 
       - run:
           name: swap in the test secrets
