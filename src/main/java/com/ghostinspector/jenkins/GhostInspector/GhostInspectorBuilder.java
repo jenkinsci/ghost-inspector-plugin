@@ -12,20 +12,19 @@ import java.util.concurrent.TimeoutException;
 import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.Extension;
-// import hudson.model.AbstractBuild;
-import hudson.model.TaskListener;
-import hudson.model.Result;
+import hudson.FilePath;
+import hudson.model.*;
 import hudson.model.AbstractProject;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
-
-import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import jenkins.tasks.SimpleBuildStep;
+import javax.annotation.Nonnull;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * GhostInspectorBuilder {@link Builder}.
  */
-public class GhostInspectorBuilder extends Builder {
+public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
 
   private static final String DISPLAY_NAME = "Run Ghost Inspector Test Suite";
   private static final String TEST_RESULTS_PASS = "pass";
@@ -73,8 +72,8 @@ public class GhostInspectorBuilder extends Builder {
 	}
 
  
-  // @Override
-  public boolean perform(WorkflowRun build, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+  @Override
+  public void perform(Run<?, ?> build, @Nonnull FilePath workspace, @Nonnull Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
     PrintStream logger = listener.getLogger();
     EnvVars envVars = build.getEnvironment(listener);
 
