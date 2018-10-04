@@ -2,12 +2,12 @@ version: 2
 jobs:
   build-and-test:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: docker:17.05.0-ce-git
     steps:
+      - setup_remote_docker
       - checkout
-      - run:
-          name: check for maven
-          command: which mvn
+      # - awk out the config info in ./jenkins_home/jobs/*/config.xml
+      # - spin up jenkins server with jenkins_home
 
 workflows:
   version: 2
