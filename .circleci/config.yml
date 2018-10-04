@@ -64,7 +64,6 @@ jobs:
           name: fire up jenkins container
           command: |
             docker run -d \
-              -p 8080:8080 \
               -v jenkins_home:/var/jenkins_home \
               -v scripts:/tmp/scripts \
               -e JOB='standard-test' \
