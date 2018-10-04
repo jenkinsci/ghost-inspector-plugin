@@ -8,8 +8,13 @@ jobs:
       - run:
           name: build plugin
           command: mvn clean install
+      - run:
+          name: move plugin
+          command: |
+            mkdir /tmp/plugin
+            cp target/ghostinspector.hpi /tmp/plugin/
       - persist_to_workspace:
-          root: target
+          root: /tmp/plugin/
           paths: 
             - ghost-inspector.hpi
 
@@ -18,14 +23,14 @@ jobs:
       - image: docker:17.05.0-ce-git
     steps:
       - attach_workspace:
-          at: target
+          at: /tmp/plugin/
 
       - setup_remote_docker
       - checkout
 
       - run:
           name: debug
-          command: ls -l
+          command: ls -l /tmp/plugin/
 
       # - run:
       #     name: swap in the test secrets
