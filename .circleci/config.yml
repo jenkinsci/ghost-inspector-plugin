@@ -1,6 +1,8 @@
 version: 2
 jobs:
   build-and-test:
+    docker:
+      - image: circleci/openjdk:8-jdk
     steps:
       - checkout
       - run:
