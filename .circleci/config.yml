@@ -51,7 +51,7 @@ jobs:
             docker network create temp-network
             docker run -d \
               -p 8080:8080 \
-              -v ./jenkins_home:/var/jenkins_home \
+              -v jenkins_home:/var/jenkins_home \
               --network temp-network \
               --name jenkins \
               jenkins/jenkins:lts
