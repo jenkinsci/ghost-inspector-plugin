@@ -12,6 +12,7 @@ jobs:
           name: move plugin
           command: |
             mkdir /tmp/plugin
+            ls -l
             cp target/ghostinspector.hpi /tmp/plugin/
       - persist_to_workspace:
           root: /tmp/plugin/
