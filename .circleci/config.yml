@@ -35,13 +35,13 @@ jobs:
       - run:
           name: swap in the test secrets
           command: |
-            sed -i 's/{{APIKEY}}/$APIKEY/g' ./jenkins_home/jobs/*/config.xml
-            sed -i 's/{{SUITEID}}/$SUITEID/g' ./jenkins_home/jobs/*/config.xml
+            sed -i "s/{{APIKEY}}/$APIKEY/g" ./jenkins_home/jobs/*/config.xml
+            sed -i "s/{{SUITEID}}/$SUITEID/g" ./jenkins_home/jobs/*/config.xml
             cat ./jenkins_home/jobs/*/config.xml
 
       - run:
           name: copy new ghost inspector plugin to jenkins_home
-          command: cp /tmp/ghost-inspector.hpi ./jenkins_home/plugins/
+          command: cp /tmp/plugin/ghost-inspector.hpi ./jenkins_home/plugins/
 
       # - spin up jenkins server with jenkins_home
       - run:
