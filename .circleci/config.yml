@@ -30,14 +30,15 @@ jobs:
 
       - run:
           name: debug
-          command: ls
+          command: |
+            ls
+            pwd
 
       - run:
           name: swap in the test secrets
           command: |
             sed -i "s/{{APIKEY}}/$APIKEY/g" ./jenkins_home/jobs/*/config.xml
             sed -i "s/{{SUITEID}}/$SUITEID/g" ./jenkins_home/jobs/*/config.xml
-            cat ./jenkins_home/jobs/*/config.xml
 
       - run:
           name: copy new ghost inspector plugin to jenkins_home
@@ -64,8 +65,8 @@ jobs:
           command: |
             docker run -d \
               -p 8080:8080 \
-              -v ./jenkins_home:/var/jenkins_home \
-              -v ./scripts:/tmp/scripts \
+              -v jenkins_home:/var/jenkins_home \
+              -v scripts:/tmp/scripts \
               -e JOB='standard-test' \
               --network temp-network \
               --name jenkins-runner \
