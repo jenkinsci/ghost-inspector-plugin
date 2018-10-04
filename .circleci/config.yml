@@ -70,7 +70,7 @@ jobs:
               -e JOB='standard-test' \
               --network temp-network \
               --name jenkins-runner \
-              --entrypoint "/bin/bash"
+              --entrypoint "/bin/bash" \
               jenkins/jenkins:lts /tmp/test-plugin
 
 
