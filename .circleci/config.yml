@@ -19,13 +19,13 @@ jobs:
             - ghost-inspector.hpi
 
   test:
-    machine:
-      image: circleci/classic:latest
+    docker:
+      - image: docker:17.05.0-ce-git
     steps:
       - attach_workspace:
           at: /tmp/plugin/
 
-      # - setup_remote_docker
+      - setup_remote_docker
       - checkout
 
       - run:
@@ -44,33 +44,33 @@ jobs:
           name: copy new ghost inspector plugin to jenkins_home
           command: cp /tmp/plugin/ghost-inspector.hpi ./jenkins_home/plugins/
 
-      # - spin up jenkins server with jenkins_home
+      - run:
+          name: build our Docker image
+          command: docker build -t jenkins-test:0.1.$CIRCLE_BUILD_NUM .
+
       - run:
           name: fire up jenkins container
           command: |
             docker network create temp-network
             docker run -d \
               -p 8080:8080 \
-              -v jenkins_home:/var/jenkins_home \
               --network temp-network \
               --name jenkins \
-              jenkins/jenkins:lts
+              jenkins-test:0.1.$CIRCLE_BUILD_NUM
       - run:
           name: pause to let jenkins load
           command: sleep 60
       
-      # fire up a second jenkins and run the script
+      # # fire up a second jenkins and run the script
       - run:
           name: fire up jenkins container
           command: |
             docker run \
-              -v jenkins_home:/var/jenkins_home \
-              -v scripts:/tmp/scripts \
               -e JOB='standard-test' \
               --network temp-network \
               --name jenkins-runner \
               --entrypoint "/tmp/scripts/test-plugin.sh" \
-              jenkins/jenkins:lts
+              jenkins-test:0.1.$CIRCLE_BUILD_NUM
 
 
       # - run:
