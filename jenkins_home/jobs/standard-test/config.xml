@@ -15,7 +15,7 @@
       <suiteId>{{SUITEID}}</suiteId>
       <apiKey>{{APIKEY}}</apiKey>
       <startUrl>https://ghostinspector.com</startUrl>
-      <params>paramOne=1234&amp;paramTwo=4321</params>
+      <params>paramOne=1234&amp;jobName=standard-test</params>
     </com.ghostinspector.jenkins.GhostInspector.GhostInspectorBuilder>
   </builders>
   <publishers/>

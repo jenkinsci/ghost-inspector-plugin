@@ -7,7 +7,7 @@
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.57">
     <script>node {
    stage(&apos;Main&apos;) {
-        step([$class: &apos;GhostInspectorBuilder&apos;, apiKey: &apos;{{APIKEY}}&apos;, params: &apos;paramOne=1234&amp;paramTwo=4321&apos;, startUrl: &apos;https://ghostinspector.com/&apos;, suiteId: &apos;{{SUITEID}}&apos;])
+        step([$class: &apos;GhostInspectorBuilder&apos;, apiKey: &apos;{{APIKEY}}&apos;, params: &apos;paramOne=1234&amp;jobName=pipeline-test&apos;, startUrl: &apos;https://ghostinspector.com/&apos;, suiteId: &apos;{{SUITEID}}&apos;])
    }
 }</script>
     <sandbox>true</sandbox>

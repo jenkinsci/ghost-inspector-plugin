@@ -6,10 +6,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: build plugin
+          name: Build the ghost-inspector plugin
           command: mvn clean install
       - run:
-          name: move plugin
+          name: Save the plugin to our workspace
           command: |
             mkdir /tmp/plugin
             cp target/ghost-inspector.hpi /tmp/plugin/
@@ -24,32 +24,22 @@ jobs:
     steps:
       - attach_workspace:
           at: /tmp/plugin/
-
       - setup_remote_docker
       - checkout
-
       - run:
-          name: debug
-          command: |
-            ls
-            pwd
-
-      - run:
-          name: swap in the test secrets
+          name: Swap test secrets into Jenkins jobs
           command: |
             sed -i "s/{{APIKEY}}/$APIKEY/g" ./jenkins_home/jobs/*/config.xml
             sed -i "s/{{SUITEID}}/$SUITEID/g" ./jenkins_home/jobs/*/config.xml
-
       - run:
-          name: copy new ghost inspector plugin to jenkins_home
+          name: Copy new ghost-inspector.hpi plugin to jenkins_home
           command: cp /tmp/plugin/ghost-inspector.hpi ./jenkins_home/plugins/
 
       - run:
-          name: build our Docker image
+          name: Build our Docker (Jenkins) image to run plugin tests
           command: docker build -t jenkins-test:0.1.$CIRCLE_BUILD_NUM .
-
       - run:
-          name: fire up jenkins container
+          name: Start Jenkins
           command: |
             docker network create temp-network
             docker run -d \
@@ -58,37 +48,20 @@ jobs:
               --name jenkins \
               jenkins-test:0.1.$CIRCLE_BUILD_NUM
       - run:
-          name: pause to let jenkins load
+          name: Pause to let Jenkins fire up
           command: sleep 60
-      
       - run:
-          name: test the plugin - standard job
+          name: Test the plugin - standard job
           command: |
             docker exec \
               -e JOB=standard-test \
               jenkins /tmp/scripts/test-plugin.sh
-
-
-
-      # # fire up a second jenkins and run the script
-      # - run:
-      #     name: fire up jenkins container
-      #     command: |
-      #       docker run \
-      #         -e JOB='standard-test' \
-      #         --network temp-network \
-      #         --name jenkins-runner \
-      #         --entrypoint "/tmp/scripts/test-plugin.sh" \
-      #         jenkins-test:0.1.$CIRCLE_BUILD_NUM
-
-
-      # - run:
-      #     name: run standard build job
-      #     command: ./scripts/test-plugin standard-test
-      # - run:
-      #     name: run pipeline build job
-      #     command: ./scripts/test-plugin pipeline-test
-        
+      - run:
+          name: Test the plugin - pipeline job
+          command: |
+            docker exec \
+              -e JOB=pipeline-test \
+              jenkins /tmp/scripts/test-plugin.sh
 
 workflows:
   version: 2
