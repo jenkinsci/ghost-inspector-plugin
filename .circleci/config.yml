@@ -62,6 +62,8 @@ jobs:
             docker exec \
               -e JOB=pipeline-test \
               jenkins /tmp/scripts/test-plugin.sh
+      - store_artifacts:
+          path: /tmp/plugin/ghost-inspector.hpi
 
 workflows:
   version: 2
