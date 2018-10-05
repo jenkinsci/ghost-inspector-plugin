@@ -2,7 +2,7 @@
 
 # trigger the job
 echo "Triggering build for $JOB"
-java -jar /var/jenkins_home/war/WEB-INF/jenkins-cli.jar -s http://jenkins:8080/ build-job $JOB
+java -jar /var/jenkins_home/war/WEB-INF/jenkins-cli.jar -s http://jenkins:8080/ build $JOB
 
 STATUS='null'
 echo "Polling for job result"

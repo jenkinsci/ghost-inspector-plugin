@@ -61,16 +61,25 @@ jobs:
           name: pause to let jenkins load
           command: sleep 60
       
-      # # fire up a second jenkins and run the script
       - run:
-          name: fire up jenkins container
+          name: test the plugin - standard job
           command: |
-            docker run \
-              -e JOB='standard-test' \
-              --network temp-network \
-              --name jenkins-runner \
-              --entrypoint "/tmp/scripts/test-plugin.sh" \
-              jenkins-test:0.1.$CIRCLE_BUILD_NUM
+            docker exec \
+              -e JOB=standard-test \
+              jenkins /tmp/scripts/test-plugin.sh
+
+
+
+      # # fire up a second jenkins and run the script
+      # - run:
+      #     name: fire up jenkins container
+      #     command: |
+      #       docker run \
+      #         -e JOB='standard-test' \
+      #         --network temp-network \
+      #         --name jenkins-runner \
+      #         --entrypoint "/tmp/scripts/test-plugin.sh" \
+      #         jenkins-test:0.1.$CIRCLE_BUILD_NUM
 
 
       # - run:
