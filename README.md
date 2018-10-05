@@ -37,7 +37,7 @@ The following example will allow you to trigger the Ghost Inspector plugin from 
 ```
 node {
    stage('Main') {
-        step([$class: 'GhostInspectorBuilder', apiKey: 'my-api-key', params: '{"additional": "parameters"}', startUrl: 'my-start-url', suiteId: 'my-suite-id'])
+        step([$class: 'GhostInspectorBuilder', apiKey: 'my-api-key', params: 'additional=parameters&another=one', startUrl: 'my-start-url', suiteId: 'my-suite-id'])
    }
 }
 ```
