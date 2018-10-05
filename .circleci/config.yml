@@ -20,7 +20,7 @@ jobs:
 
   test:
     machine:
-      image: docker:17.05.0-ce-git
+      image: circleci/classic:latest
     steps:
       - attach_workspace:
           at: /tmp/plugin/
