@@ -34,14 +34,12 @@ jobs:
       - run:
           name: Copy new ghost-inspector.hpi plugin to jenkins_home
           command: cp /tmp/plugin/ghost-inspector.hpi ./jenkins_home/plugins/
-
       - run:
           name: Build our Docker (Jenkins) image to run plugin tests
           command: docker build -t jenkins-test:0.1.$CIRCLE_BUILD_NUM .
       - run:
           name: Start Jenkins
           command: |
-            docker network create temp-network
             docker run -d \
               -p 8080:8080 \
               --network temp-network \
