@@ -1,0 +1,74 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - run:
+          name: Build the ghost-inspector plugin
+          command: mvn clean install
+      - run:
+          name: Save the plugin to our workspace
+          command: |
+            mkdir /tmp/plugin
+            cp target/ghost-inspector.hpi /tmp/plugin/
+      - persist_to_workspace:
+          root: /tmp/plugin/
+          paths: 
+            - ghost-inspector.hpi
+
+  test:
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - attach_workspace:
+          at: /tmp/plugin/
+      - setup_remote_docker
+      - checkout
+      - run:
+          name: Swap test secrets into Jenkins jobs
+          command: |
+            sed -i "s/{{APIKEY}}/$APIKEY/g" ./jenkins_home/jobs/*/config.xml
+            sed -i "s/{{SUITEID}}/$SUITEID/g" ./jenkins_home/jobs/*/config.xml
+      - run:
+          name: Copy new ghost-inspector.hpi plugin to jenkins_home
+          command: cp /tmp/plugin/ghost-inspector.hpi ./jenkins_home/plugins/
+      - run:
+          name: Build our Docker (Jenkins) image to run plugin tests
+          command: docker build -t jenkins-test:0.1.$CIRCLE_BUILD_NUM .
+      - run:
+          name: Start Jenkins
+          command: |
+            docker network create temp-network
+            docker run -d \
+              -p 8080:8080 \
+              --network temp-network \
+              --name jenkins \
+              jenkins-test:0.1.$CIRCLE_BUILD_NUM
+      - run:
+          name: Pause to let Jenkins fire up
+          command: sleep 60
+      - run:
+          name: Test the plugin - standard job
+          command: |
+            docker exec \
+              -e JOB=standard-test \
+              jenkins /tmp/scripts/test-plugin.sh
+      - run:
+          name: Test the plugin - pipeline job
+          command: |
+            docker exec \
+              -e JOB=pipeline-test \
+              jenkins /tmp/scripts/test-plugin.sh
+      - store_artifacts:
+          path: /tmp/plugin/ghost-inspector.hpi
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build

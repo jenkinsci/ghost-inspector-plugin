@@ -3,3 +3,5 @@ target/
 
 # Misc
 *.DS_Store
+
+.vscode

@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <com.ghostinspector.jenkins.GhostInspector.GhostInspectorBuilder plugin="ghost-inspector@2.0">
+      <suiteId>{{SUITEID}}</suiteId>
+      <apiKey>{{APIKEY}}</apiKey>
+      <startUrl>https://ghostinspector.com</startUrl>
+      <params>paramOne=1234&amp;jobName=standard-test</params>
+    </com.ghostinspector.jenkins.GhostInspector.GhostInspectorBuilder>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

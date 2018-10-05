@@ -1,5 +1,11 @@
 Ghost Inspector Plugin for Jenkins
 -------------
+### Build status:
+| Suite | Status |
+| --- | --- |
+| CircleCI plugin build | ![CircleCI](https://circleci.com/gh/ghost-inspector/ghost-inspector-jenkins-plugin.svg?style=svg) |
+| Ghost Inspector suite | ![test suite](https://api.ghostinspector.com/v1/suites/5bb6451aa9f228640376c021/status-badge) |
+
 With this plugin you can add a build step to your Jenkins project that executes a Ghost Inspector test suite. You can trigger this after deployment, or you can run the tests on a local build instance of your application using a tunnel in the "Start URL" field. If the test suite is successful, your pipeline will continue to the next step in your pipeline; however, if it fails (or times out), the build will be marked as failed.
 
 ## Installing from Jenkins
@@ -24,6 +30,28 @@ This plugin can be installed from within the Jenkins UI (recommended).
 6. Save your Jenkins project.
 
 _Note:_ Environment variables may be used in both the ```Start URL``` and ```Additional Parameters``` field with the format ```$VAR_NAME```.
+
+## Pipelines usage
+The following example will allow you to trigger the Ghost Inspector plugin from your pipelines config:
+
+```
+node {
+   stage('Main') {
+        step([$class: 'GhostInspectorBuilder', apiKey: 'my-api-key', params: 'additional=parameters&another=one', startUrl: 'my-start-url', suiteId: 'my-suite-id'])
+   }
+}
+```
+
+## Development
+Quick start:
+
+```
+$ brew install java8 maven
+$ export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+$ mvn clean install
+```
+
+The resulting `ghost-inspector.hpi` can be found in the `./target` folder.
 
 ## Change Log
 2018-Feb-06: Add "Additional Parameters" field. Apply environment variables to "Start URL" and "Additional Parameters" fields.
