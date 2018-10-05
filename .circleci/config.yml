@@ -19,8 +19,7 @@ jobs:
             - ghost-inspector.hpi
 
   test:
-    machine: true
-    docker:
+    machine:
       - image: docker:17.05.0-ce-git
     steps:
       - attach_workspace:
