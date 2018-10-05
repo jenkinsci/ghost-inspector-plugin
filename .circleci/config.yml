@@ -40,8 +40,10 @@ jobs:
       - run:
           name: Start Jenkins
           command: |
+            docker network create temp-network
             docker run -d \
               -p 8080:8080 \
+              --network temp-network \
               --name jenkins \
               jenkins-test:0.1.$CIRCLE_BUILD_NUM
       - run:
