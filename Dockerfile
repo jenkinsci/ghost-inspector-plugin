@@ -1,4 +1,4 @@
 FROM jenkins/jenkins:lts
 
-COPY jenkins_home --chown=jenkins /var/jenkins_home
-COPY scripts --chown=jenkins /tmp/scripts
+COPY --chown=jenkins jenkins_home /var/jenkins_home
+COPY --chown=jenkins scripts /tmp/scripts
