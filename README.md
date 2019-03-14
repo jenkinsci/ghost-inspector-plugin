@@ -60,4 +60,4 @@ The resulting `ghost-inspector.hpi` can be found in the `./target` folder.
 
 2018-Feb-02: Move from sync API call to async polling
 
-2017-Apr-04: Initial release
+2017-Apr-04: Initial release 
