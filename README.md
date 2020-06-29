@@ -3,7 +3,7 @@ Ghost Inspector Plugin for Jenkins
 ### Build status:
 | Suite | Status |
 | --- | --- |
-| CircleCI plugin build | ![CircleCI](https://circleci.com/gh/ghost-inspector/ghost-inspector-jenkins-plugin.svg?style=svg) |
+| CircleCI plugin build | ![CircleCI](https://circleci.com/gh/ghost-inspector/ghost-inspector-jenkins-plugin/tree/stable.svg?style=svg) |
 | Ghost Inspector suite | ![test suite](https://api.ghostinspector.com/v1/suites/5bb6451aa9f228640376c021/status-badge) |
 
 With this plugin you can add a build step to your Jenkins project that executes a Ghost Inspector test suite. You can trigger this after deployment, or you can run the tests on a local build instance of your application using a tunnel in the "Start URL" field. If the test suite is successful, your pipeline will continue to the next step in your pipeline; however, if it fails (or times out), the build will be marked as failed.
