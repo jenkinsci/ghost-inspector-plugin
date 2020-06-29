@@ -53,11 +53,10 @@ $ mvn clean install
 
 The resulting `ghost-inspector.hpi` can be found in the `./target` folder.
 
-## Change Log
-2018-Oct-04: Update plugin for pipelines support
-
-2018-Feb-06: Add "Additional Parameters" field. Apply environment variables to "Start URL" and "Additional Parameters" fields.
-
-2018-Feb-02: Move from sync API call to async polling
-
-2017-Apr-04: Initial release 
+## Changelog
+* 2020-Jun-29: Dependency updates; Increase timeout from 1hr to 10hrs; Apply environment variables to all fields.
+* 2018-Oct-04: Update plugin for pipelines support
+* 2018-Oct-04: Update plugin for pipelines support
+* 2018-Feb-06: Add "Additional Parameters" field. Apply environment variables to "Start URL" and "Additional Parameters" fields.
+* 2018-Feb-02: Move from sync API call to async polling
+* 2017-Apr-04: Initial release 
