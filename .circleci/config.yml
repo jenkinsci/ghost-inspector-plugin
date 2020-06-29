@@ -1,13 +1,23 @@
 version: 2
+mvn_cache_key: &mvn_cache_key mvn-dependency-cache-{{ checksum "pom.xml" }}
 jobs:
   build:
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
       - checkout
+      - restore_cache:
+          key: *mvn_cache_key
+      - run:
+          name: Fetch dependencies
+          command: mvn dependency:go-offline
+      - save_cache:
+          key: *mvn_cache_key
+          paths:
+            - ~/.m2
       - run:
           name: Build the ghost-inspector plugin
-          command: mvn clean install
+          command: mvn package
       - run:
           name: Save the plugin to our workspace
           command: |

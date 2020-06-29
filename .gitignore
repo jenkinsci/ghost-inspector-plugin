@@ -2,6 +2,7 @@
 target/
 
 # Misc
+.settings
 *.DS_Store
 
 .vscode
