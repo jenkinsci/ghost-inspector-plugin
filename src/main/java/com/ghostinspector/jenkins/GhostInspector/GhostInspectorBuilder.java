@@ -16,8 +16,10 @@ import hudson.model.*;
 import hudson.model.AbstractProject;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.util.Secret;
 import jenkins.tasks.SimpleBuildStep;
 import javax.annotation.Nonnull;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -29,14 +31,14 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
   private static final String TEST_RESULTS_PASS = "pass";
   private static final int TIMEOUT = 36000;
 
+  private final Secret apiKey;
   private final String suiteId;
-  private final String apiKey;
   private final String startUrl;
   private final String params;
 
   @DataBoundConstructor
   public GhostInspectorBuilder(String apiKey, String suiteId, String startUrl, String params) {
-    this.apiKey = apiKey;
+    this.apiKey = Secret.fromString(apiKey);
     this.suiteId = suiteId;
     this.startUrl = startUrl;
     this.params = params;
@@ -45,7 +47,7 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
   /**
    * @return the apiKey
    */
-  public String getApiKey() {
+  public Secret getApiKey() {
     return apiKey;
   }
 
@@ -78,8 +80,8 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
 
     // Apply environment variables to parameters
     String expandedApiKey = "";
-    if (apiKey != null && !apiKey.isEmpty()) {
-      expandedApiKey = envVars.expand(apiKey);
+    if (apiKey != null) {
+      expandedApiKey = envVars.expand(apiKey.getPlainText());
     }
     String expandedSuiteId = "";
     if (suiteId != null && !suiteId.isEmpty()) {
@@ -95,7 +97,6 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
     }
 
     logger.println(DISPLAY_NAME);
-    // logger.println("API Key: " + expandedApiKey);
     logger.println("Suite ID: " + expandedSuiteId);
     logger.println("Start URL: " + expandedStartUrl);
     logger.println("Additional Parameters: " + expandedParams);
@@ -131,6 +132,7 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
    * is marked as public so that it can be accessed from views.
    */
   @Extension
+  @Symbol("ghostInspector")
   public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
     /**

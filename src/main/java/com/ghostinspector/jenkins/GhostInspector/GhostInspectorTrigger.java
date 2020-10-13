@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import hudson.util.Secret;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.client.config.RequestConfig;
@@ -29,7 +31,7 @@ public class GhostInspectorTrigger implements Callable<String> {
   private static final String TEST_RESULTS_PASS = "pass";
   private static final String TEST_RESULTS_FAIL = "fail";
 
-  private final String apiKey;
+  private final Secret apiKey;
   private final String suiteId;
   private final String startUrl;
   private final String params;
@@ -38,7 +40,7 @@ public class GhostInspectorTrigger implements Callable<String> {
 
   public GhostInspectorTrigger(PrintStream logger, String apiKey, String suiteId, String startUrl, String params) {
     this.log = logger;
-    this.apiKey = apiKey;
+    this.apiKey = Secret.fromString(apiKey);
     this.suiteId = suiteId;
     this.startUrl = startUrl;
     this.params = params;
@@ -58,14 +60,14 @@ public class GhostInspectorTrigger implements Callable<String> {
     log.println("Suite Execution URL: " + executeUrl);
 
     // Add API key after URL is logged
-    executeUrl = executeUrl + "&apiKey=" + apiKey;
+    executeUrl = executeUrl + "&apiKey=" + apiKey.getPlainText();
 
     // Trigger suite and fetch result ID
     String resultId = parseResultId(fetchUrl(executeUrl));
     log.println("Suite triggered. Result ID received: " + resultId);
 
     // Poll suite result until it completes
-    String resultUrl = API_HOST + "/" + API_VERSION + "/suite-results/" + resultId + "/?apiKey=" + apiKey;
+    String resultUrl = API_HOST + "/" + API_VERSION + "/suite-results/" + resultId + "/?apiKey=" + apiKey.getPlainText();
     while (true) {
       // Sleep for 10 seconds
       try {
