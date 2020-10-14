@@ -27,7 +27,12 @@
     <developer>
       <id>justinklemm</id>
       <name>Justin Klemm</name>
-      <email>tech@ghostinspector.com</email>
+      <email>justin@ghostinspector.com</email>
+    </developer>
+    <developer>
+      <id>aaronfay</id>
+      <name>Aaron Fay</name>
+      <email>aaron@ghostinspector.com</email>
     </developer>
   </developers>
 
