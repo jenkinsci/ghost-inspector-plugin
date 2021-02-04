@@ -1,26 +1,29 @@
 package com.ghostinspector.jenkins.GhostInspector;
 
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractProject;
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Builder;
+import hudson.util.Secret;
+import jenkins.tasks.SimpleBuildStep;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
+
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import hudson.EnvVars;
-import hudson.Launcher;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.model.*;
-import hudson.model.AbstractProject;
-import hudson.tasks.Builder;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.util.Secret;
-import jenkins.tasks.SimpleBuildStep;
-import javax.annotation.Nonnull;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * GhostInspectorBuilder {@link Builder}.
@@ -97,13 +100,14 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
     }
 
     logger.println(DISPLAY_NAME);
-    logger.println("Suite ID: " + expandedSuiteId);
+    logger.println("Suite ID(s): " + expandedSuiteId);
     logger.println("Start URL: " + expandedStartUrl);
     logger.println("Additional Parameters: " + expandedParams);
 
+    List<TestSuite> testSuiteList = TestSuite.buildFromCommaSeparatedList(expandedSuiteId);
     ExecutorService executorService = Executors.newSingleThreadExecutor();
     Future<String> future = executorService.submit(
-        new GhostInspectorTrigger(logger, expandedApiKey, expandedSuiteId, expandedStartUrl, expandedParams));
+        new GhostInspectorTrigger(logger, expandedApiKey, testSuiteList, expandedStartUrl, expandedParams));
 
     try {
       String result = future.get(TIMEOUT + 30, TimeUnit.SECONDS);
