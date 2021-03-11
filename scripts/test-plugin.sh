@@ -13,9 +13,6 @@ chmod +x ./jq
 # Trigger the job
 echo "Triggering build for $JOB"
 
-# Allow cli user to interact with jenkins
-export JAVA_OPTS=-Dpermissive-script-security.enabled=no_security
-
 java -jar jenkins-cli.jar -s http://localhost:8080/ build $JOB
 
 STATUS='None'
