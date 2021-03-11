@@ -1,16 +1,11 @@
 package com.ghostinspector.jenkins.GhostInspector;
 
 import java.io.IOException;
-import java.io.PrintStream;
-import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import hudson.util.Secret;
-
+import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.client.config.RequestConfig;
@@ -18,71 +13,82 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 
-import net.sf.json.JSONObject;
-
 /**
  * GhostInspectorTrigger
  */
 public class GhostInspectorTrigger implements Callable<String> {
 
-  private static final String API_HOST = "https://api.ghostinspector.com";
-  private static final String API_VERSION = "v1";
-  private static final String TEST_RESULTS_PENDING = "pending";
-  private static final String TEST_RESULTS_PASS = "pass";
-  private static final String TEST_RESULTS_FAIL = "fail";
+  private final SuiteExecutionConfig config;
+  // private PrintStream log;
 
-  private final Secret apiKey;
-  private final String suiteId;
-  private final String startUrl;
-  private final String params;
-
-  private PrintStream log;
-
-  public GhostInspectorTrigger(PrintStream logger, String apiKey, String suiteId, String startUrl, String params) {
-    this.log = logger;
-    this.apiKey = Secret.fromString(apiKey);
-    this.suiteId = suiteId;
-    this.startUrl = startUrl;
-    this.params = params;
+  public GhostInspectorTrigger(SuiteExecutionConfig config) {
+    this.config = config;
+    // this.log = config.getLogger();
   }
 
   @Override
   public String call() throws Exception {
-    String result = null;
-    // Generate suite execution API URL
-    String executeUrl = API_HOST + "/" + API_VERSION + "/suites/" + suiteId + "/execute/?immediate=1";
-    if (startUrl != null && !startUrl.isEmpty()) {
-      executeUrl = executeUrl + "&startUrl=" + URLEncoder.encode(startUrl, "UTF-8");
+    
+    // spin up each of the suites
+    List<SuiteResult> suiteResults = Collections.emptyList();
+
+    for (String suiteId : config.suiteIds) {
+      Suite suite = new Suite(suiteId, config);
+      Logger.log("Suite Execution URL: " + suite.safeExecuteUrl);
+
+      String rawResult = fetchUrl(suite.executeUrl);
+
+      // TODO: here we will check for multiple results
+      SuiteResult suiteResult = new SuiteResult(rawResult, config);
+      Logger.log("Suite triggered, result ID: " + suiteResult.id);
+
+      suiteResults.add(suiteResult);
     }
-    if (params != null && !params.isEmpty()) {
-      executeUrl = executeUrl + "&" + params;
-    }
-    log.println("Suite Execution URL: " + executeUrl);
 
-    // Add API key after URL is logged
-    executeUrl = executeUrl + "&apiKey=" + apiKey.getPlainText();
-
-    // Trigger suite and fetch result ID
-    String resultId = parseResultId(fetchUrl(executeUrl));
-    log.println("Suite triggered. Result ID received: " + resultId);
-
-    // Poll suite result until it completes
-    String resultUrl = API_HOST + "/" + API_VERSION + "/suite-results/" + resultId + "/?apiKey=" + apiKey.getPlainText();
-    while (true) {
-      // Sleep for 10 seconds
+    // check the results to see where we're at
+    int totalResults = suiteResults.size();
+    int completeResults = 0;
+    while (completeResults < totalResults) {
       try {
         TimeUnit.SECONDS.sleep(10);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
-      // Check result
-      result = parseResult(fetchUrl(resultUrl));
-      if (result == TEST_RESULTS_PENDING) {
-        log.println("Suite is still in progress. Checking again in 10 seconds...");
-      } else {
-        return result;
+
+      for (SuiteResult suiteResult : suiteResults) {
+        if (suiteResult.isComplete()) {
+          continue;
+        }
+
+        // Check result
+        String rawResult = fetchUrl(suiteResult.url);
+        suiteResult.update(rawResult);
+        reportResultStatus(suiteResult);
+
+        if (suiteResult.isComplete()) {
+          completeResults = completeResults + 1;
+          Logger.log(" ... suite result " + suiteResult.id + " is complete.");
+        }
       }
     }
+
+    // all results are finished, report aggregated results
+    return checkAllResults(suiteResults);
+  }
+
+  private String checkAllResults(List<SuiteResult> results) {
+    for (SuiteResult result : results) {
+      if (result.getStatus() == ResultStatus.Failing) {
+        return ResultStatus.Failing;
+      }
+    }
+    return ResultStatus.Passing;
+  }
+
+  private void reportResultStatus(SuiteResult suiteResult) {
+    Logger.log("Test runs passed: " + suiteResult.getCountPassing());
+    Logger.log("Test runs failed: " + suiteResult.getCountFailing());
+    Logger.log("Execution time: " + suiteResult.getExecutionTime() + " seconds");
   }
 
   /**
@@ -108,61 +114,22 @@ public class GhostInspectorTrigger implements Callable<String> {
 
       final int statusCode = response.getStatusLine().getStatusCode();
       if (statusCode != 200 && statusCode != 201) {
-        log.println(String.format("Error response from Ghost Inspector API, marking as failed: %s", statusCode));
+        Logger.log(String.format("Error response from Ghost Inspector API, marking as failed: %s", statusCode));
       } else {
         responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
-        // log.println("Data received: " + responseBody);
+        // Logger.log("Data received: " + responseBody);
       }
     } catch (Exception e) {
-      LOGGER.log(Level.SEVERE, "Exception: ", e);
+      Logger.log("Exception: " + e.getMessage());
       e.printStackTrace();
     } finally {
       try {
         httpclient.close();
       } catch (IOException e) {
-        LOGGER.log(Level.SEVERE, "Error closing connection: ", e);
+        Logger.log("Error closing connection: " + e.getMessage());
         e.printStackTrace();
       }
     }
     return responseBody;
   }
-
-  /**
-   * Parse the suite result ID from API JSON response
-   *
-   * @param data The JSON to parse in string format
-   * @return The ID of the suite result
-   */
-  private String parseResultId(String data) {
-    JSONObject jsonObject = JSONObject.fromObject(data);
-    JSONObject result = jsonObject.getJSONObject("data");
-    return result.get("_id").toString();
-  }
-
-  /**
-   * Parse the suite result JSON response to determine status
-   *
-   * @param data The JSON to parse in string format
-   * @return The status of the suite result
-   */
-  private String parseResult(String data) {
-    JSONObject jsonObject = JSONObject.fromObject(data);
-    JSONObject result = jsonObject.getJSONObject("data");
-
-    if (result.get("passing").toString().equals("null")) {
-      return TEST_RESULTS_PENDING;
-    }
-
-    log.println("Test runs passed: " + result.get("countPassing"));
-    log.println("Test runs failed: " + result.get("countFailing"));
-    log.println("Execution time: " + (Integer.parseInt(result.get("executionTime").toString()) / 1000) + " seconds");
-
-    if (result.get("passing").toString().equals("true")) {
-      return TEST_RESULTS_PASS;
-    } else {
-      return TEST_RESULTS_FAIL;
-    }
-  }
-
-  private static final Logger LOGGER = Logger.getLogger(GhostInspectorTrigger.class.getName());
 }

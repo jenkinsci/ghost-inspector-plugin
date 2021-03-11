@@ -1,14 +1,12 @@
 package com.ghostinspector.jenkins.GhostInspector;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.FilePath;
@@ -16,111 +14,69 @@ import hudson.model.*;
 import hudson.model.AbstractProject;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
-import hudson.util.Secret;
 import jenkins.tasks.SimpleBuildStep;
 import javax.annotation.Nonnull;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+
 
 /**
  * GhostInspectorBuilder {@link Builder}.
  */
 public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
 
-  private static final String DISPLAY_NAME = "Run Ghost Inspector Test Suite";
-  private static final String TEST_RESULTS_PASS = "pass";
+  private static final String displayName = "Run Ghost Inspector Test Suite";
   private static final int TIMEOUT = 36000;
-
-  private final Secret apiKey;
-  private final String suiteId;
-  private final String startUrl;
-  private final String params;
+  private final SuiteExecutionConfig config;
+  // private PrintStream logger;
+  // private final GhostInspectorTrigger trigger;
 
   @DataBoundConstructor
   public GhostInspectorBuilder(String apiKey, String suiteId, String startUrl, String params) {
-    this.apiKey = Secret.fromString(apiKey);
-    this.suiteId = suiteId;
-    this.startUrl = startUrl;
-    this.params = params;
-  }
-
-  /**
-   * @return the apiKey
-   */
-  public Secret getApiKey() {
-    return apiKey;
-  }
-
-  /**
-   * @return the suiteId
-   */
-  public String getSuiteId() {
-    return suiteId;
-  }
-
-  /**
-   * @return the startUrl
-   */
-  public String getStartUrl() {
-    return startUrl;
-  }
-
-  /**
-   * @return additional parameters
-   */
-  public String getParams() {
-    return params;
+    // set up initial configuration for execution
+    this.config = new SuiteExecutionConfig(apiKey, suiteId, startUrl, params);
   }
 
   @Override
   public void perform(Run<?, ?> build, @Nonnull FilePath workspace, @Nonnull Launcher launcher, TaskListener listener)
       throws InterruptedException, IOException {
-    PrintStream logger = listener.getLogger();
-    EnvVars envVars = build.getEnvironment(listener);
+    
+    // set up logger
+    Logger.setLogger(listener.getLogger());
 
-    // Apply environment variables to parameters
-    String expandedApiKey = "";
-    if (apiKey != null) {
-      expandedApiKey = envVars.expand(apiKey.getPlainText());
-    }
-    String expandedSuiteId = "";
-    if (suiteId != null && !suiteId.isEmpty()) {
-      expandedSuiteId = envVars.expand(suiteId);
-    }
-    String expandedStartUrl = "";
-    if (startUrl != null && !startUrl.isEmpty()) {
-      expandedStartUrl = envVars.expand(startUrl);
-    }
-    String expandedParams = "";
-    if (params != null && !params.isEmpty()) {
-      expandedParams = envVars.expand(params);
-    }
+    // augment the execution config now that we have the environment
+    config.applyVariables(build.getEnvironment(listener));
 
-    logger.println(DISPLAY_NAME);
-    logger.println("Suite ID: " + expandedSuiteId);
-    logger.println("Start URL: " + expandedStartUrl);
-    logger.println("Additional Parameters: " + expandedParams);
+    // report our status before we start
+    reportExecutionConfiguration();
 
     ExecutorService executorService = Executors.newSingleThreadExecutor();
-    Future<String> future = executorService.submit(
-        new GhostInspectorTrigger(logger, expandedApiKey, expandedSuiteId, expandedStartUrl, expandedParams));
+    Future<String> future = executorService.submit(new GhostInspectorTrigger(config));
 
     try {
-      String result = future.get(TIMEOUT + 30, TimeUnit.SECONDS);
-      if (!TEST_RESULTS_PASS.equalsIgnoreCase(result)) {
+      String finalStatus = future.get(TIMEOUT + 30, TimeUnit.SECONDS);
+      if (ResultStatus.Passing.equals(finalStatus)) {
         build.setResult(Result.FAILURE);
       }
     } catch (TimeoutException e) {
-      logger.println("Timeout Exception:" + e.toString());
+      Logger.log("Timeout Exception:" + e.toString());
       build.setResult(Result.FAILURE);
       e.printStackTrace();
     } catch (Exception e) {
-      logger.println("Exception:" + e.toString());
+      Logger.log("Exception:" + e.toString());
       build.setResult(Result.FAILURE);
       e.printStackTrace();
     }
     executorService.shutdownNow();
   }
+
+  private void reportExecutionConfiguration() {
+    Logger.log(displayName);
+    Logger.log("Suite ID(s): " + String.join(", ", config.suiteIds));
+    Logger.log("Start URL: " + config.getStartUrl());
+    Logger.log("Additional Parameters: " + config.getUrlParams());
+  }
+
 
   @Override
   public DescriptorImpl getDescriptor() {
@@ -151,7 +107,7 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
      * This name is used in the configuration screen.
      */
     public String getDisplayName() {
-      return DISPLAY_NAME;
+      return displayName;
     }
 
   }
