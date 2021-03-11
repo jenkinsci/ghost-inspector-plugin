@@ -21,7 +21,9 @@ STATUS='None'
 echo "Polling for job result"
 while [ "$STATUS" = 'None' ]; do
   sleep 5
-  STATUS=$(curl -s "http://localhost:8080/job/$JOB/lastBuild/api/json" | ./jq '.result')
+  RESULT=$(curl -s "http://localhost:8080/job/$JOB/lastBuild/api/json")
+  echo " - result $RESULT"
+  STATUS=$(echo $RESULT | ./jq '.result')
   echo " - status: $STATUS"
 done
 
