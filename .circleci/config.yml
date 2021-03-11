@@ -54,7 +54,7 @@ jobs:
             docker run -d \
               -p 8080:8080 \
               --network temp-network \
-              --env JAVA_OPTS=-Dpermissive-script-security.enabled=no_security
+              --env JAVA_OPTS=-Dpermissive-script-security.enabled=no_security \
               --name jenkins \
               jenkins-test:0.1.$CIRCLE_BUILD_NUM
       - run:
