@@ -13,6 +13,8 @@ chmod +x ./jq
 # Trigger the job
 echo "Triggering build for $JOB"
 
+cat /var/jenkins_home/secrets/initialAdminPassword
+
 java -jar jenkins-cli.jar -s http://localhost:8080/ build $JOB
 
 STATUS='None'
