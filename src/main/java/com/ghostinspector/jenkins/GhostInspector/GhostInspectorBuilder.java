@@ -14,6 +14,7 @@ import hudson.model.*;
 import hudson.model.AbstractProject;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.util.Secret;
 import jenkins.tasks.SimpleBuildStep;
 import javax.annotation.Nonnull;
 import org.jenkinsci.Symbol;
@@ -28,13 +29,50 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
   private static final String displayName = "Run Ghost Inspector Test Suite";
   private static final int TIMEOUT = 36000;
   private final SuiteExecutionConfig config;
-  // private PrintStream logger;
-  // private final GhostInspectorTrigger trigger;
+
+  private final Secret apiKey;
+  private final String suiteId;
+  private final String startUrl;
+  private final String params;
 
   @DataBoundConstructor
   public GhostInspectorBuilder(String apiKey, String suiteId, String startUrl, String params) {
+    // store these for display in Jenkins
+    this.apiKey = Secret.fromString(apiKey);
+    this.suiteId = suiteId;
+    this.startUrl = startUrl;
+    this.params = params;
+
     // set up initial configuration for execution
     this.config = new SuiteExecutionConfig(apiKey, suiteId, startUrl, params);
+  }
+
+  /**
+   * @return the apiKey
+   */
+  public Secret getApiKey() {
+    return apiKey;
+  }
+
+  /**
+   * @return the suiteId
+   */
+  public String getSuiteId() {
+    return suiteId;
+  }
+
+  /**
+   * @return the startUrl
+   */
+  public String getStartUrl() {
+    return startUrl;
+  }
+
+  /**
+   * @return additional parameters
+   */
+  public String getParams() {
+    return params;
   }
 
   @Override
