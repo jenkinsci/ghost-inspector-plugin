@@ -89,11 +89,11 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
     reportExecutionConfiguration();
 
     ExecutorService executorService = Executors.newSingleThreadExecutor();
-    Future<String> future = executorService.submit(new GhostInspectorTrigger(config));
-
+    
     try {
+      Future<String> future = executorService.submit(new GhostInspectorTrigger(config));
       String finalStatus = future.get(TIMEOUT + 30, TimeUnit.SECONDS);
-      if (ResultStatus.Passing.equals(finalStatus)) {
+      if (!ResultStatus.Passing.equals(finalStatus)) {
         build.setResult(Result.FAILURE);
       }
     } catch (TimeoutException e) {
@@ -101,18 +101,29 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
       build.setResult(Result.FAILURE);
       e.printStackTrace();
     } catch (Exception e) {
-      Logger.log("Exception:" + e.toString());
+      String message = e.getMessage();
+      if (message.contains("API Error")) {
+        Logger.log(message);
+      } else {
+        Logger.log("Exception:" + e.toString());
+        e.printStackTrace();
+      }
       build.setResult(Result.FAILURE);
-      e.printStackTrace();
     }
     executorService.shutdownNow();
   }
 
   private void reportExecutionConfiguration() {
+    Logger.log("");
+    Logger.log("#####################################");
     Logger.log(displayName);
-    Logger.log("Suite ID(s): " + String.join(", ", config.suiteIds));
-    Logger.log("Start URL: " + config.getStartUrl());
-    Logger.log("Additional Parameters: " + config.getUrlParams());
+    Logger.log("#####################################");
+    Logger.log("");
+    Logger.log("Configuration:");
+    Logger.log(" - id(s): " + String.join(", ", config.suiteIds));
+    Logger.log(" - startUrl: " + config.getStartUrl());
+    Logger.log(" - params: " + config.getUrlParams());
+    Logger.log("");
   }
 
 

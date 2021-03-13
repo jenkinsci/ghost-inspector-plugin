@@ -54,6 +54,7 @@ $ mvn clean install
 The resulting `ghost-inspector.hpi` can be found in the `./target` folder.
 
 ## Changelog
+* 2021-Mar-12: Add ability to execute multiple suites; Update to handle API change for data sources; Improve error handling; Add unit tests
 * 2020-Jun-29: Dependency updates; Increase timeout from 1hr to 10hrs; Apply environment variables to all fields.
 * 2018-Oct-04: Update plugin for pipelines support
 * 2018-Oct-04: Update plugin for pipelines support

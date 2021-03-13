@@ -11,9 +11,9 @@ public class SuiteResult {
   private String countFailing = "0";
   private String executionTime = "0";
 
-  public SuiteResult(String rawData, SuiteExecutionConfig config) {
+  public SuiteResult(String id, SuiteExecutionConfig config) {
     this.status = ResultStatus.Pending;
-    this.id = parseId(rawData);
+    this.id = id;
     this.url = config.urls.getSuiteResultUrl(this.id);
   }
 
@@ -58,11 +58,15 @@ public class SuiteResult {
     countFailing = parsed.get("countFailing").toString();
 
     // set execution time
-    executionTime = String.valueOf(Integer.parseInt(parsed.get("executionTime").toString()) / 1000);
+    // TODO: test checking for "null"
+    String rawExecutionTime = parsed.get("executionTime").toString();
+    if (!rawExecutionTime.equals("null")) {
+      executionTime = String.valueOf(Integer.parseInt(rawExecutionTime) / 1000);
+    }
   }
 
-  private String parseId(String rawData) {
-    JSONObject parsed = JSONObject.fromObject(rawData).getJSONObject("data");
-    return parsed.get("_id").toString();
-  }
+  // private String parseId(String rawData) {
+  //   JSONObject parsed = JSONObject.fromObject(rawData).getJSONObject("data");
+  //   return parsed.get("_id").toString();
+  // }
 }

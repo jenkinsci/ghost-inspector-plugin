@@ -12,7 +12,7 @@ public class SuiteResultTest {
   @Before
   public void init() {
     config = new SuiteExecutionConfig("api-key", "suite-id", "my-start-url", "params=true");
-    suiteResult = new SuiteResult("{\"data\": {\"_id\": \"1234567890\"}}", config);
+    suiteResult = new SuiteResult("1234567890", config);
   }
 
   @Test

@@ -1,11 +1,13 @@
 package com.ghostinspector.jenkins.GhostInspector;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
+
+import net.sf.json.JSONObject;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.client.config.RequestConfig;
@@ -28,21 +30,22 @@ public class GhostInspectorTrigger implements Callable<String> {
 
   @Override
   public String call() throws Exception {
+    Logger.log("Executing:");
     
     // spin up each of the suites
-    List<SuiteResult> suiteResults = Collections.emptyList();
+    List<SuiteResult> suiteResults = new ArrayList<>();
 
     for (String suiteId : config.suiteIds) {
       Suite suite = new Suite(suiteId, config);
-      Logger.log("Suite Execution URL: " + suite.safeExecuteUrl);
+      Logger.log(" - executing URL: " + suite.safeExecuteUrl);
 
-      String rawResult = fetchUrl(suite.executeUrl);
-
-      // TODO: here we will check for multiple results
-      SuiteResult suiteResult = new SuiteResult(rawResult, config);
-      Logger.log("Suite triggered, result ID: " + suiteResult.id);
-
-      suiteResults.add(suiteResult);
+      String rawResponse = fetchUrl(suite.executeUrl);
+      List<SuiteResult> newResults = suite.parseResults(rawResponse);
+      Logger.log(" - suite [" + suiteId + "] returned " + newResults.size() + " results:");
+      for (SuiteResult result: newResults) {
+        suiteResults.add(result);
+        Logger.log("  -> [" + result.id + "]");
+      }
     }
 
     // check the results to see where we're at
@@ -55,6 +58,7 @@ public class GhostInspectorTrigger implements Callable<String> {
         Thread.currentThread().interrupt();
       }
 
+      Logger.log("Checking results:");
       for (SuiteResult suiteResult : suiteResults) {
         if (suiteResult.isComplete()) {
           continue;
@@ -63,11 +67,11 @@ public class GhostInspectorTrigger implements Callable<String> {
         // Check result
         String rawResult = fetchUrl(suiteResult.url);
         suiteResult.update(rawResult);
-        reportResultStatus(suiteResult);
+        Logger.log(" - result [" + suiteResult.id + "] status: passing " + suiteResult.getCountPassing() + " / failing: " + suiteResult.getCountFailing());
 
         if (suiteResult.isComplete()) {
           completeResults = completeResults + 1;
-          Logger.log(" ... suite result " + suiteResult.id + " is complete.");
+          Logger.log(" ✓ result complete [" + suiteResult.id + "] status: " + suiteResult.getStatus());
         }
       }
     }
@@ -85,19 +89,13 @@ public class GhostInspectorTrigger implements Callable<String> {
     return ResultStatus.Passing;
   }
 
-  private void reportResultStatus(SuiteResult suiteResult) {
-    Logger.log("Test runs passed: " + suiteResult.getCountPassing());
-    Logger.log("Test runs failed: " + suiteResult.getCountFailing());
-    Logger.log("Execution time: " + suiteResult.getExecutionTime() + " seconds");
-  }
-
   /**
    * Method for making an HTTP call
    * 
    * @param url The URL to fetch
    * @return The response body of the URL
    */
-  private String fetchUrl(String url) {
+  private String fetchUrl(String url) throws Exception {
     String responseBody = "";
     final CloseableHttpAsyncClient httpclient = HttpAsyncClients.createDefault();
     try {
@@ -118,6 +116,13 @@ public class GhostInspectorTrigger implements Callable<String> {
       } else {
         responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
         // Logger.log("Data received: " + responseBody);
+
+        // Check for API errors
+        JSONObject jsonResponse = JSONObject.fromObject(responseBody);
+        String error = jsonResponse.getString("errorType");
+        if (!error.isEmpty()) {
+          throw new SuiteExecutionException("API Error: " + jsonResponse.getString("message"));
+        }
       }
     } catch (Exception e) {
       Logger.log("Exception: " + e.getMessage());
