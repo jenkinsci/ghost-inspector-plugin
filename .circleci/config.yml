@@ -55,7 +55,7 @@ jobs:
               -p 8080:8080 \
               --network temp-network \
               --name jenkins \
-              --env "JENKINS_OPTS=--argumentsRealm.passwd.admin=password --argumentsRealm.roles.user=admin --argumentsRealm.roles.admin=admin" \
+              --env JENKINS_OPTS="--argumentsRealm.passwd.admin=password --argumentsRealm.roles.user=admin --argumentsRealm.roles.admin=admin" \
               jenkins-test:0.1.$CIRCLE_BUILD_NUM
       - run:
           name: Pause to let Jenkins fire up
