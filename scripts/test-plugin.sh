@@ -13,7 +13,7 @@ chmod +x ./jq
 # Trigger the job
 echo "Triggering build for $JOB"
 
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth "admin:password" build $JOB
+java -jar jenkins-cli.jar -s http://localhost:8080/ -auth "admin:0209e98d0c274a19b137afd682a1820d" build $JOB
 
 STATUS='None'
 echo "Polling for job result"
