@@ -119,10 +119,16 @@ public class GhostInspectorTrigger implements Callable<String> {
 
         // Check for API errors
         JSONObject jsonResponse = JSONObject.fromObject(responseBody);
-        String error = jsonResponse.getString("errorType");
+        String error = "";
+        try {
+          error = jsonResponse.getString("errorType");
+        } catch (Exception ignored) {}
+
         if (!error.isEmpty()) {
           throw new SuiteExecutionException("API Error: " + jsonResponse.getString("message"));
         }
+        
+
       }
     } catch (Exception e) {
       Logger.log("Exception: " + e.getMessage());
