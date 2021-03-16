@@ -42,8 +42,8 @@ jobs:
             sed -i "s/{{APIKEY}}/$APIKEY/g" ./jenkins_home/jobs/*/config.xml
             sed -i "s/{{SUITEID}}/$SUITEID/g" ./jenkins_home/jobs/*/config.xml
       - run:
-          name: Copy new ghost-inspector.hpi plugin to jenkins_home
-          command: cp /tmp/plugin/ghost-inspector.hpi ./jenkins_home/plugins/
+          name: Copy new ghost-inspector.hpi plugin to jenkins_home, named as .jpi (so it will install)
+          command: cp /tmp/plugin/ghost-inspector.hpi ./jenkins_home/plugins/ghost-inspector.jpi
       - run:
           name: Build our Docker (Jenkins) image to run plugin tests
           command: docker build -t jenkins-test:0.1.$CIRCLE_BUILD_NUM .
