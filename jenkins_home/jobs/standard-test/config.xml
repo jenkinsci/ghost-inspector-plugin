@@ -1,5 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.1' encoding='UTF-8'?>
 <project>
+  <actions/>
   <description></description>
   <keepDependencies>false</keepDependencies>
   <properties/>
@@ -11,9 +12,21 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
-    <com.ghostinspector.jenkins.GhostInspector.GhostInspectorBuilder plugin="ghost-inspector@2.0">
+    <com.ghostinspector.jenkins.GhostInspector.GhostInspectorBuilder plugin="ghost-inspector@3.3">
+      <config>
+        <suiteIds class="java.util.Arrays$ArrayList">
+          <a class="string-array">
+            <string>{{SUITEID}}</string>
+          </a>
+        </suiteIds>
+        <urls>
+          <startUrl>https://ghostinspector.com</startUrl>
+          <urlParams>paramOne=1234&amp;jobName=standard-test</urlParams>
+          <apiKey>{AQAAABAAAAAQ1BhTxkAsFB2sdm1/ZKjql+dyELTUZDKTsdXsHj55zTs=}</apiKey>
+        </urls>
+      </config>
+      <apiKey>{AQAAABAAAAAQMbCugpSiHd+lyyS/f6WzaiwHCoOgMIDJ+a2YbCt+OKQ=}</apiKey>
       <suiteId>{{SUITEID}}</suiteId>
-      <apiKey>{{APIKEY}}</apiKey>
       <startUrl>https://ghostinspector.com</startUrl>
       <params>paramOne=1234&amp;jobName=standard-test</params>
     </com.ghostinspector.jenkins.GhostInspector.GhostInspectorBuilder>
