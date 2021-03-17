@@ -20,11 +20,12 @@ java -jar jenkins-cli.jar -s http://localhost:8080/ -auth "admin:$JENKINS_PASSWO
 STATUS='null'
 echo "Polling for job result"
 while [ "$STATUS" = 'null' ]; do
-  sleep 5
+  
   RESULT=$(curl -s --user admin:$JENKINS_PASSWORD "http://localhost:8080/job/$JOB/lastBuild/api/json")
   echo " - result $RESULT"
   STATUS=$(echo $RESULT | ./jq '.result')
   echo " - status: $STATUS"
+  sleep 5
 done
 
 if [ "$STATUS" != 'SUCCESS' ]; then
