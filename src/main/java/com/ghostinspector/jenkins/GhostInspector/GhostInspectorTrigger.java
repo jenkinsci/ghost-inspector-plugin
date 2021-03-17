@@ -21,11 +21,9 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
 public class GhostInspectorTrigger implements Callable<String> {
 
   private final SuiteExecutionConfig config;
-  // private PrintStream log;
 
   public GhostInspectorTrigger(SuiteExecutionConfig config) {
     this.config = config;
-    // this.log = config.getLogger();
   }
 
   @Override

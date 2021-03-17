@@ -28,7 +28,7 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
 
   private static final String displayName = "Run Ghost Inspector Test Suite";
   private static final int TIMEOUT = 36000;
-  private final SuiteExecutionConfig config;
+  private SuiteExecutionConfig config;
 
   private final Secret apiKey;
   private final String suiteId;
@@ -43,8 +43,6 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
     this.startUrl = startUrl;
     this.params = params;
 
-    // set up initial configuration for execution
-    this.config = new SuiteExecutionConfig(apiKey, suiteId, startUrl, params);
   }
 
   /**
@@ -82,7 +80,8 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
     // set up logger
     Logger.setLogger(listener.getLogger());
 
-    // augment the execution config now that we have the environment
+    // set up initial configuration for execution
+    config = new SuiteExecutionConfig(apiKey, suiteId, startUrl, params);
     config.applyVariables(build.getEnvironment(listener));
 
     // report our status before we start
