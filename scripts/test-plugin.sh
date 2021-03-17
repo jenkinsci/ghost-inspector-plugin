@@ -23,7 +23,7 @@ while [ "$STATUS" = 'null' ]; do
   
   RESULT=$(curl -s --user admin:$JENKINS_PASSWORD "http://localhost:8080/job/$JOB/lastBuild/api/json")
   echo " - result $RESULT"
-  STATUS=$(echo $RESULT | ./jq '.result')
+  STATUS=$(echo $RESULT | ./jq -r '.result')
   echo " - status: $STATUS"
   sleep 5
 done
