@@ -17,9 +17,9 @@ echo "Triggering build for $JOB"
 
 java -jar jenkins-cli.jar -s http://localhost:8080/ -auth "admin:$JENKINS_PASSWORD" build $JOB
 
-STATUS='None'
+STATUS='null'
 echo "Polling for job result"
-while [ "$STATUS" = 'None' ]; do
+while [ "$STATUS" = 'null' ]; do
   sleep 5
   RESULT=$(curl -s --user admin:$JENKINS_PASSWORD "http://localhost:8080/job/$JOB/lastBuild/api/json")
   echo " - result $RESULT"
