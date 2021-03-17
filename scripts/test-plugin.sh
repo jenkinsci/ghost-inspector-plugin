@@ -28,6 +28,9 @@ while [ "$STATUS" = 'null' ]; do
   sleep 5
 done
 
+echo "Build output:"
+java -jar jenkins-cli.jar -s http://localhost:8080/ -auth "admin:$JENKINS_PASSWORD" console $JOB
+
 if [ "$STATUS" != 'SUCCESS' ]; then
   exit 1
 else 
