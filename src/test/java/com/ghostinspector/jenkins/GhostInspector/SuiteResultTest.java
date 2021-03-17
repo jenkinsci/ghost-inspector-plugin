@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import hudson.util.Secret;
+
 public class SuiteResultTest {
 
   private SuiteExecutionConfig config;
@@ -11,7 +13,7 @@ public class SuiteResultTest {
 
   @Before
   public void init() {
-    config = new SuiteExecutionConfig("api-key", "suite-id", "my-start-url", "params=true");
+    config = new SuiteExecutionConfig(Secret.fromString("api-key"), "suite-id", "my-start-url", "params=true");
     suiteResult = new SuiteResult("1234567890", config);
   }
 

@@ -4,15 +4,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import hudson.EnvVars;
+import hudson.util.Secret;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import hudson.EnvVars;
+
 
 public class SuiteExecutionConfigTest {
   
   @Test
   public void testInstantiation() {
-    SuiteExecutionConfig config = new SuiteExecutionConfig("my-api-key", "my-suite-id", "my-start-url", "param=one");
+    SuiteExecutionConfig config = new SuiteExecutionConfig(Secret.fromString("my-api-key"), "my-suite-id", "my-start-url", "param=one");
     List<String> expected = Arrays.asList("my-suite-id");
     assertEquals(config.suiteIds, expected);
 
@@ -26,7 +28,7 @@ public class SuiteExecutionConfigTest {
 
   @Test
   public void testMultipleSuiteIds() {
-    SuiteExecutionConfig config = new SuiteExecutionConfig("my-api-key", "suite-one, suite-two", "my-start-url", "param=one");
+    SuiteExecutionConfig config = new SuiteExecutionConfig(Secret.fromString("my-api-key"), "suite-one, suite-two", "my-start-url", "param=one");
     List<String> expected = Arrays.asList("suite-one", "suite-two");
     assertEquals(config.suiteIds, expected);
 
@@ -38,7 +40,7 @@ public class SuiteExecutionConfigTest {
   @Test
   public void testExpandVariables() {
     // confirm the variables are applied to the underlying class
-    SuiteExecutionConfig config = new SuiteExecutionConfig("api-${varOne}-key", "1234", "https://${varTwo}.url", "url=params&another=${varThree}");
+    SuiteExecutionConfig config = new SuiteExecutionConfig(Secret.fromString("api-${varOne}-key"), "1234", "https://${varTwo}.url", "url=params&another=${varThree}");
     HashMap<String, String> map = new HashMap<String, String>();
     map.put("varOne", "my");
     map.put("varTwo", "hello");

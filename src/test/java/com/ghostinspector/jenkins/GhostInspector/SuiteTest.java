@@ -2,6 +2,7 @@ package com.ghostinspector.jenkins.GhostInspector;
 
 import java.util.List;
 
+import hudson.util.Secret;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -11,7 +12,7 @@ public class SuiteTest {
 
   @Test
   public void testInstantiation() {
-    config = new SuiteExecutionConfig("api-key", "suite-id", "my-start-url", "params=some-param");
+    config = new SuiteExecutionConfig(Secret.fromString("api-key"), "suite-id", "my-start-url", "params=some-param");
     Suite suite = new Suite("suite-id", config);
 
     assertEquals(suite.id, "suite-id");
@@ -21,7 +22,7 @@ public class SuiteTest {
 
   @Test
   public void testParseResultsSingle() {
-    config = new SuiteExecutionConfig("api-key", "suite-id", "my-start-url", "params=some-param");
+    config = new SuiteExecutionConfig(Secret.fromString("api-key"), "suite-id", "my-start-url", "params=some-param");
     Suite suite = new Suite("suite-id", config);
 
     String rawResult = "{\"data\": {\"_id\": \"22233\"}}";
@@ -32,7 +33,7 @@ public class SuiteTest {
 
   @Test
   public void testParseResultsMultiple() {
-    config = new SuiteExecutionConfig("api-key", "suite-id", "my-start-url", "params=some-param");
+    config = new SuiteExecutionConfig(Secret.fromString("api-key"), "suite-id", "my-start-url", "params=some-param");
     Suite suite = new Suite("suite-id", config);
 
     String rawResult = "{\"data\": [{\"_id\": \"22233\"}, {\"_id\": \"33344\"}]}";
