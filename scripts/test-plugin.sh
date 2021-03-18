@@ -6,17 +6,30 @@ cd /tmp
 wget http://localhost:8080/jnlpJars/jenkins-cli.jar
 chmod 744 jenkins-cli.jar
 
+wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+mv ./jq-linux64 ./jq
+chmod +x ./jq
+
+JENKINS_PASSWORD="0209e98d0c274a19b137afd682a1820d"
+
 # Trigger the job
 echo "Triggering build for $JOB"
-java -jar jenkins-cli.jar -s http://localhost:8080/ build $JOB
 
-STATUS='None'
+java -jar jenkins-cli.jar -s http://localhost:8080/ -auth "admin:$JENKINS_PASSWORD" build $JOB
+
+STATUS='null'
 echo "Polling for job result"
-while [ "$STATUS" = 'None' ]; do
-  sleep 5
-  STATUS=$(curl -s "http://localhost:8080/job/$JOB/lastBuild/api/json" | python -c 'import json; import sys; data=json.load(sys.stdin); print data.get("result")')
+while [ "$STATUS" = 'null' ]; do
+  
+  RESULT=$(curl -s --user admin:$JENKINS_PASSWORD "http://localhost:8080/job/$JOB/lastBuild/api/json")
+  # echo " - result $RESULT"
+  STATUS=$(echo $RESULT | ./jq -r '.result')
   echo " - status: $STATUS"
+  sleep 5
 done
+
+echo "Build output:"
+java -jar jenkins-cli.jar -s http://localhost:8080/ -auth "admin:$JENKINS_PASSWORD" console $JOB
 
 if [ "$STATUS" != 'SUCCESS' ]; then
   exit 1
