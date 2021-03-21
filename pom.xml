@@ -11,7 +11,7 @@
 
   <groupId>com.ghost-inspector.jenkins</groupId>
   <artifactId>ghost-inspector</artifactId>
-  <version>3.2-SNAPSHOT</version>
+  <version>3.2</version>
   <packaging>hpi</packaging>
 
   <properties>
