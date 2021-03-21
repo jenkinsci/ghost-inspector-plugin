@@ -53,6 +53,14 @@ $ mvn clean install
 
 The resulting `ghost-inspector.hpi` can be found in the `./target` folder.
 
+## Publishing new versions
+
+Refer to the [Jenkins documentation on performing a plugin release](https://www.jenkins.io/doc/developer/publishing/releasing/). Once your GitHub and Maven credentials set up, performing a release should be as easy as running the following command:
+
+```
+mvn release:prepare release:perform
+```
+
 ## Changelog
 * 2021-Mar-12: Add ability to execute multiple suites; Update to handle API change for data sources; Improve error handling; Add unit tests
 * 2020-Jun-29: Dependency updates; Increase timeout from 1hr to 10hrs; Apply environment variables to all fields.
