@@ -11,7 +11,7 @@
 
   <groupId>com.ghost-inspector.jenkins</groupId>
   <artifactId>ghost-inspector</artifactId>
-  <version>3.3-SNAPSHOT</version>
+  <version>3.3</version>
   <packaging>hpi</packaging>
 
   <properties>
@@ -47,7 +47,7 @@
     <connection>scm:git:git://github.com/jenkinsci/ghost-inspector-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/ghost-inspector-plugin.git</developerConnection>
     <url>http://github.com/jenkinsci/ghost-inspector-plugin</url>
-    <tag>v3.2</tag>
+    <tag>ghost-inspector-3.3</tag>
   </scm>
 
   <repositories>
