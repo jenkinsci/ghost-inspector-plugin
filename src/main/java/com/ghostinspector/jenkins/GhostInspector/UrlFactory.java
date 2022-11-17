@@ -13,19 +13,19 @@ public class UrlFactory {
 
   private String startUrl;
   private String urlParams;
-  private Secret apiKey;
+  private Secret apiKeySecret;
   private PrintStream logger;
 
 
-  public UrlFactory(Secret apiKey, String startUrl, String urlParams) {
-    this.apiKey = apiKey;
+  public UrlFactory(Secret apiKeySecret, String startUrl, String urlParams) {
+    this.apiKeySecret = apiKeySecret;
     this.startUrl = startUrl;
     this.urlParams = urlParams;
   }
 
   public void expandVariables(EnvVars envVars) {
-    if (apiKey != null) {
-      apiKey = Secret.fromString(envVars.expand(apiKey.getPlainText()));
+    if (apiKeySecret != null) {
+      apiKeySecret = Secret.fromString(envVars.expand(apiKeySecret.getPlainText()));
     }
 
     if (startUrl != null && !startUrl.isEmpty()) {
@@ -55,15 +55,15 @@ public class UrlFactory {
   }
 
   public String getExecuteSuiteUrl(String suiteId) {
-    return apiRoot + "/suites/" + suiteId + "/execute" + buildQueryString() + "&apiKey=" + apiKey.getPlainText();
+    return apiRoot + "/suites/" + suiteId + "/execute" + buildQueryString() + "&apiKey=" + apiKeySecret.getPlainText();
   }
 
   public String getSafeExecuteSuiteUrl(String suiteId) {
-    return apiRoot + "/suites/" + suiteId + "/execute" + buildQueryString() + "&apiKey=" + apiKey.getPlainText().substring(0, 4) + "xxx";
+    return apiRoot + "/suites/" + suiteId + "/execute" + buildQueryString() + "&apiKey=" + apiKeySecret.getPlainText().substring(0, 4) + "xxx";
   }
 
   public String getSuiteResultUrl(String resultId) {
-    return apiRoot + "/suite-results/" + resultId + "?apiKey=" + apiKey.getPlainText();
+    return apiRoot + "/suite-results/" + resultId + "?apiKey=" + apiKeySecret.getPlainText();
   }
 
   public String getUrlParams() {

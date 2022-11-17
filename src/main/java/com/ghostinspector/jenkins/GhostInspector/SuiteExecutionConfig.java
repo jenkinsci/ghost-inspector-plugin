@@ -13,9 +13,9 @@ public class SuiteExecutionConfig {
   public final List<String> suiteIds;
   public final UrlFactory urls;
 
-  public SuiteExecutionConfig(Secret apiKey, String rawIdString, String startUrl, String params) {
+  public SuiteExecutionConfig(Secret apiKeySecret, String rawIdString, String startUrl, String params) {
     this.suiteIds = parseIds(rawIdString);
-    this.urls = new UrlFactory(apiKey, startUrl, params);
+    this.urls = new UrlFactory(apiKeySecret, startUrl, params);
   }
 
   public void applyVariables(EnvVars variables) {
