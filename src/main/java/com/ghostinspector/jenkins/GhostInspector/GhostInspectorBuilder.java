@@ -30,7 +30,8 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
   private static final int TIMEOUT = 36000;
   private SuiteExecutionConfig config;
 
-  private final Secret apiKey;
+  private final String apiKey;
+  private final Secret apiKeySecret;
   private final String suiteId;
   private final String startUrl;
   private final String params;
@@ -38,7 +39,8 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
   @DataBoundConstructor
   public GhostInspectorBuilder(String apiKey, String suiteId, String startUrl, String params) {
     // store these for display in Jenkins
-    this.apiKey = Secret.fromString(apiKey);
+    this.apiKey = apiKey;
+    this.apiKeySecret = Secret.fromString(apiKey);
     this.suiteId = suiteId;
     this.startUrl = startUrl;
     this.params = params;
@@ -48,7 +50,7 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
   /**
    * @return the apiKey
    */
-  public Secret getApiKey() {
+  public String getApiKey() {
     return apiKey;
   }
 
@@ -81,7 +83,7 @@ public class GhostInspectorBuilder extends Builder implements SimpleBuildStep {
     Logger.setLogger(listener.getLogger());
 
     // set up initial configuration for execution
-    config = new SuiteExecutionConfig(apiKey, suiteId, startUrl, params);
+    config = new SuiteExecutionConfig(apiKeySecret, suiteId, startUrl, params);
     config.applyVariables(build.getEnvironment(listener));
 
     // report our status before we start
