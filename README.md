@@ -1,3 +1,4 @@
+
 Ghost Inspector Plugin for Jenkins
 -------------
 ### Build status:
