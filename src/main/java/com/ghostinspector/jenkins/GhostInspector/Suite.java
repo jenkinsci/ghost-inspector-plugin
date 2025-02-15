@@ -7,8 +7,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
-import com.ghostinspector.jenkins.GhostInspector.SuiteResult;
-
 public class Suite {
   public final String id;
   public final String executeUrl;
